@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.25)
 # Функции для работы с исходниками проекта
 
 # Подключить служебный модуль
-include(_auxiliary)
+include(__auxiliary)
 
 #[====[.rst:
 

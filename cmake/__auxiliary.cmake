@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.25)
+# Фильровать многочисленные включения
+include_guard()
 
 # Служебные функции cmake
 
-#[====[.rst:
+#[[
     **Описание**
 
     Функция предназначена для проверки входных параметров самописных cmake функций.
@@ -33,7 +34,7 @@ cmake_minimum_required(VERSION 3.25)
     -          ``PARAMETERS`` - Список обязательных параметров
     - ``OPTIONAL_PARAMETERS`` - (опционально) Список опциональных параметров
     -     ``EXCLUSIVE_FLAGS`` - (опционально) Список взаимно исключающих флагов
-#]====]
+#]]
 
 function(__check_parameters__)
 
@@ -128,8 +129,7 @@ function(__check_parameters__)
 
 endfunction()
 
-#[====[.rst:
-
+#[[
     **Описание**
 
     Функция предназначена для проверки существования директорий.
@@ -147,8 +147,7 @@ endfunction()
     **Аргументы**
 
     - ``DIRS`` - Пути к проверяемым директориям
-
-#]====]
+#]]
 
 function(__check_directories_existence__)
 
@@ -179,8 +178,7 @@ function(__check_directories_existence__)
 
 endfunction()
 
-#[====[.rst:
-
+#[[
     **Описание**
 
     Функция предназначена для поиска и формирования списка поддиректорий для заданной директории.
@@ -210,8 +208,7 @@ endfunction()
     -   ``OUT_VAR`` - Выходная переменная
     - ``MAX_DEPTH`` - (опционально) Максимальная глубина вложенности
     -   ``NO_ROOT`` - (опционально) Не добавлять исходную директорию
-
-#]====]
+#]]
 
 function(__collect_subdirectories__)
 
@@ -310,5 +307,66 @@ function(__collect_subdirectories__)
 
     # Вернуть значение выходной переменной
     return(PROPAGATE ${__OUT_VAR__})
+
+endfunction()
+
+#[[
+    ИСПОЛЬЗОВАНИЕ
+        __check_targets_existence__(TARGETS <target>...
+                                    [FATAL_ERROR | WARNING])
+
+    АРГУМЕНТЫ
+        TARGETS_NAMES           - имена таргетов для проверки
+        FATAL_ERROR, WARNING    - (опционально) модификаторы проверки таргетов на существование (по умолчанию FATAL_ERROR)
+
+    ОПИСАНИЕ
+        Проверить существование таргета
+#]]
+
+function(__check_targets_existence__)
+
+    # Задать префикс парсинга
+    set(__PREFIX__ "__TARGET_EXISTENCE_CHECKING_PREFIX__")
+
+    # Задать конфигурацию параметров парсинга
+    set(__EXCLUSIVE_MODIFIERS__ FATAL_ERROR WARNING)
+    set(__MULTIPLE_VALUE_ARGS__ TARGETS)
+
+    # Парсить параметры
+    cmake_parse_arguments("${__PREFIX__}"
+                          "${__EXCLUSIVE_MODIFIERS__}"
+                          ""
+                          "${__MULTIPLE_VALUE_ARGS__}"
+                          "${ARGN}")
+
+    # Проверить обязательные параметры функции
+    __check_parameters__(PREFIX "${__PREFIX__}"
+                         PARAMETERS "${__MULTIPLE_VALUE_ARGS__}"
+                         EXCLUSIVE_FLAGS "${__EXCLUSIVE_MODIFIERS__}")
+
+    #======================== Конец парсинга параметров функции =============================
+
+    # Задать текущий модификатор в зависимости от флага
+    if (${__PREFIX__}_FATAL_ERROR)
+        set(__MODIFIER__ "FATAL_ERROR")
+    elseif (${__PREFIX__}_WARNING)
+        set(__MODIFIER__ "WARNING")
+    else()
+        # Значение по умолчанию
+        set(__MODIFIER__ "FATAL_ERROR")
+    endif()
+
+    # Для найденных файлов с директориями
+    foreach(__TARGET__ ${${__PREFIX__}_TARGETS})
+
+        # TODO
+        message(WARNING ${__TARGET__})
+
+        # Проверить существование основного таргета
+        if (NOT TARGET "${__TARGET__}")
+            message(${__MODIFIER__} "Нет такого таргета: ${${__PREFIX__}_TARGET_NAME}")
+        endif()
+
+    endforeach()
 
 endfunction()

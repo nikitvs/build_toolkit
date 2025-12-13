@@ -1,28 +1,26 @@
-cmake_minimum_required(VERSION 3.25)
-
-# Функции и настройки для работы с Qt
+# Фильровать многочисленные включения
+include_guard()
 
 # Подключить служебный модуль
-include(_auxiliary)
+include(__auxiliary)
 
-# Настроить MOC для Qt
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Подключить модуль работы с библиотеками
+include(${CMAKE_CURRENT_LIST_DIR}/libs_settings.cmake)
 
 # Найти пакеты Qt
 find_package(QT NAMES Qt6 Qt5 REQUIRED)
 
-#[====[.rst:
+# Запомнить глобально версию Qt
+set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
 
+#[[
     **Описание**
 
-    Найти и подключить целевому таргету указанные библиотеки Qt.
-    Опционально можно указать версию пакета Qt, из которого будут браться библиотеки.
-    По умолчанию берется наибольшая возможная версия.
-    Также опционально можно указать модификатор видимости для внешних таргетов.
-    По умолчанию берется модификатор PUBLIC.
+    Найти и подключить к целевому таргету указанные библиотеки Qt
+    Опционально можно указать версию пакета Qt, из которого будут браться библиотеки
+    По умолчанию берется наибольшая возможная версия
+    Также опционально можно указать модификатор видимости для внешних таргетов
+    По умолчанию берется модификатор PUBLIC
 
     В качестве аргументов должны быть переданы:
         - целевой таргет для подключения библиотек;
@@ -30,14 +28,14 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED)
         - (опционально) требуемая версия пакета Qt;
         - (опционально) модификатор видимости для внешних таргетов.
 
-    Функция проверяет свою сигнатуру.
+    Функция проверяет свою сигнатуру
 
     **Функция**::
 
-     assign_qt_libs_to_target(TARGET <target>
-                              QT_LIBS <lib1> <lib2> ...
-                              [VERSION <version>]
-                              [PUBLIC | PRIVATE | INTERFACE])
+     link_qt_libraries(TARGET <target>
+                       QT_LIBS <lib1> <lib2> ...
+                       [VERSION <version>]
+                       [PUBLIC | PRIVATE | INTERFACE])
 
     **Аргументы**
 
@@ -45,13 +43,12 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED)
     -                      ``QT_LIBS`` - Список библиотек Qt
     -                      ``VERSION`` - (опционально) версия пакета Qt
     - ``PUBLIC | PRIVATE | INTERFACE`` - (опционально) Модификатор доступа
+#]]
 
-#]====]
-
-function(assign_qt_libs_to_target)
+function(link_qt_libraries)
 
     # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "__QT_LIBS_ASSIGNMENT_PREFIX__")
+    set(__PARSING_PREFIX__ "__QT_LIBS_LINKING_PREFIX__")
 
     # Задать конфигурацию параметров парсинга
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
@@ -104,9 +101,26 @@ function(assign_qt_libs_to_target)
     # Найти библиотеки Qt
     find_package("Qt${__VERSION__}" COMPONENTS "${${__PARSING_PREFIX__}_QT_LIBS}" REQUIRED)
 
+    # Включить MOC для таргета
+    # NOTE атрибуты наследуются хреново, поэтому следует вызывать текущую функцию (хотя бы для подключения Core)
+    # для всех таргетов, наследующих таргетам, использующим Qt
+    set_target_properties("${${__PARSING_PREFIX__}_TARGET_NAME}" PROPERTIES
+                          AUTOUIC ON
+                          AUTOMOC ON
+                          AUTORCC ON
+    )
+
     # Подключить библиотеки Qt
     foreach(__LIB__ ${${__PARSING_PREFIX__}_QT_LIBS})
         target_link_libraries("${${__PARSING_PREFIX__}_TARGET}" ${__MODIFIER__} "Qt${__VERSION__}::${__LIB__}")
     endforeach()
+
+    # Подключить дополнительных функций Qt
+    link_modules(
+        ${__MODIFIER__}
+        TARGET_NAME "${${__PARSING_PREFIX__}_TARGET_NAME}"
+        MODULE_PATH "${__ABS_PATH_TO_LIBS_SETTINGS__}/cpp_tools/lib_additional_qt"
+        MODULE_TARGETS "LibAdditionalQt"
+    )
 
 endfunction()
