@@ -14,35 +14,24 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED)
 set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
 
 #[[
-    **Описание**
+    ИСПОЛЬЗОВАНИЕ
+        link_qt_libraries(TARGET <target>
+                          QT_LIBS <lib>...
+                          [VERSION <version>]
+                          [PUBLIC | PRIVATE | INTERFACE])
 
-    Найти и подключить к целевому таргету указанные библиотеки Qt
-    Опционально можно указать версию пакета Qt, из которого будут браться библиотеки
-    По умолчанию берется наибольшая возможная версия
-    Также опционально можно указать модификатор видимости для внешних таргетов
-    По умолчанию берется модификатор PUBLIC
+    АРГУМЕНТЫ
+        TARGET                      - целевой таргет
+        QT_LIBS                     - список библиотек Qt
+        VERSION                     - (опционально) версия пакета Qt
+        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы доступа
 
-    В качестве аргументов должны быть переданы:
-        - целевой таргет для подключения библиотек;
-        - список подключаемых библиотек;
-        - (опционально) требуемая версия пакета Qt;
-        - (опционально) модификатор видимости для внешних таргетов.
-
-    Функция проверяет свою сигнатуру
-
-    **Функция**::
-
-     link_qt_libraries(TARGET <target>
-                       QT_LIBS <lib1> <lib2> ...
-                       [VERSION <version>]
-                       [PUBLIC | PRIVATE | INTERFACE])
-
-    **Аргументы**
-
-    -                       ``TARGET`` - Целевой таргет
-    -                      ``QT_LIBS`` - Список библиотек Qt
-    -                      ``VERSION`` - (опционально) версия пакета Qt
-    - ``PUBLIC | PRIVATE | INTERFACE`` - (опционально) Модификатор доступа
+    ОПИСАНИЕ
+        Найти и подключить к целевому таргету указанные библиотеки Qt
+        Опционально можно указать версию пакета Qt, из которого будут браться библиотеки
+        По умолчанию берется наибольшая версия из доступных
+        Также опционально можно указать модификатор видимости для внешних таргетов
+        По умолчанию берется модификатор PUBLIC
 #]]
 
 function(link_qt_libraries)
@@ -67,7 +56,7 @@ function(link_qt_libraries)
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
                          PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                          OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
-                         EXCLUSIVE_FLAGS "${__EXCLUSIVE_MODIFIERS__}")
+                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -86,17 +75,11 @@ function(link_qt_libraries)
         set(__VERSION__ "${QT_VERSION_MAJOR}")
     endif()
 
-    # Задать текущий модификатор в зависимости аргументов
-    if (${__PARSING_PREFIX__}_PUBLIC)
-        set(__MODIFIER__ "PUBLIC")
-    elseif (${__PARSING_PREFIX__}_PRIVATE)
-        set(__MODIFIER__ "PRIVATE")
-    elseif (${__PARSING_PREFIX__}_INTERFACE)
-        set(__MODIFIER__ "INTERFACE")
-    else()
-        # Значение по умолчанию
-        set(__MODIFIER__ "PUBLIC")
-    endif()
+    # Извлечь использованный модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         DEFAULT "PUBLIC"
+                         OUT_VAR "__MODIFIER__")
 
     # Найти библиотеки Qt
     find_package("Qt${__VERSION__}" COMPONENTS "${${__PARSING_PREFIX__}_QT_LIBS}" REQUIRED)

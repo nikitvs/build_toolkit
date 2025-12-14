@@ -8,7 +8,6 @@ include(__auxiliary)
 set(__ABS_PATH_TO_LIBS_SETTINGS__ ${CMAKE_CURRENT_LIST_DIR} CACHE STRING "Путь к директории cmake файла функций библиотек")
 
 #[[
-
     ИСПОЛЬЗОВАНИЕ
         add_module(MODULE_PATH <path>
                    [MODULE_DESTINATION_PATH <path>])
@@ -20,7 +19,6 @@ set(__ABS_PATH_TO_LIBS_SETTINGS__ ${CMAKE_CURRENT_LIST_DIR} CACHE STRING "Пут
     ОПИСАНИЕ
         Найти и подключить в проект указанный модуль
         Функция проверяет свою сигнатуру
-
 #]]
 
 function(add_module)
@@ -92,7 +90,6 @@ function(add_module)
 endfunction()
 
 #[[
-
     ИСПОЛЬЗОВАНИЕ
         link_module_libraries(TARGET <target>
                               MODULE_PATH <path>
@@ -110,7 +107,6 @@ endfunction()
     ОПИСАНИЕ
         Найти и подключить к целевому таргету указанные модули
         Функция проверяет свою сигнатуру
-
 #]]
 
 function(link_module_libraries)
@@ -135,12 +131,12 @@ function(link_module_libraries)
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
                          PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                          OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
-                         EXCLUSIVE_FLAGS "${__EXCLUSIVE_MODIFIERS__}")
+                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
     # Проверить существование основного таргета
-    __check_targets_existence__(FATAL_ERORRRRRRRR TARGETSSSSSSSS "${${__PARSING_PREFIX__}_TARGET}")
+    __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_TARGET}")
 
     # Подключить модуль
     if (DEFINED "${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH")
@@ -150,19 +146,13 @@ function(link_module_libraries)
         add_module(MODULE_PATH "${${__PARSING_PREFIX__}_MODULE_PATH}")
     endif()
 
-    # Задать текущий модификатор в зависимости от флага
-    if (${__PARSING_PREFIX__}_PUBLIC)
-        set(__MODIFIER__ "PUBLIC")
-    elseif (${__PARSING_PREFIX__}_PRIVATE)
-        set(__MODIFIER__ "PRIVATE")
-    elseif (${__PARSING_PREFIX__}_INTERFACE)
-        set(__MODIFIER__ "INTERFACE")
-    else()
-        # Значение по умолчанию
-        set(__MODIFIER__ "PUBLIC")
-    endif()
+    # Извлечь использованный модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         DEFAULT "PUBLIC"
+                         OUT_VAR "__MODIFIER__")
 
-    __check_targets_existence__(FATAL_ERORRRRRRRR TARGETSSSSSS "${${__PARSING_PREFIX__}_MODULE_TARGETS}")
+    __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_MODULE_TARGETS}")
 
     # Подключить модули
     foreach(__LIB__ ${${__PARSING_PREFIX__}_MODULE_TARGETS})
