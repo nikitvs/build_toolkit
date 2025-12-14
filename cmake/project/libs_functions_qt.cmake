@@ -87,7 +87,7 @@ function(link_qt_libraries)
     # Включить MOC для таргета
     # NOTE атрибуты наследуются хреново, поэтому следует вызывать текущую функцию (хотя бы для подключения Core)
     # для всех таргетов, наследующих таргетам, использующим Qt
-    set_target_properties("${${__PARSING_PREFIX__}_TARGET_NAME}" PROPERTIES
+    set_target_properties("${__TARGET__}" PROPERTIES
                           AUTOUIC ON
                           AUTOMOC ON
                           AUTORCC ON
@@ -95,13 +95,13 @@ function(link_qt_libraries)
 
     # Подключить библиотеки Qt
     foreach(__LIB__ ${${__PARSING_PREFIX__}_QT_LIBS})
-        target_link_libraries("${${__PARSING_PREFIX__}_TARGET}" ${__MODIFIER__} "Qt${__VERSION__}::${__LIB__}")
+        target_link_libraries("${__TARGET__}" ${__MODIFIER__} "Qt${__VERSION__}::${__LIB__}")
     endforeach()
 
     # Подключить дополнительных функций Qt
     link_modules(
         ${__MODIFIER__}
-        TARGET_NAME "${${__PARSING_PREFIX__}_TARGET_NAME}"
+        TARGET_NAME "${__TARGET__}"
         MODULE_PATH "${__ABS_PATH_TO_LIBS_SETTINGS__}/cpp_tools/lib_additional_qt"
         MODULE_TARGETS "LibAdditionalQt"
     )
