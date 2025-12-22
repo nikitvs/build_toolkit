@@ -2,7 +2,7 @@
 include_guard()
 
 # Подключить служебный модуль
-include(__auxiliary)
+include(service)
 
 # Перекладная переменная, чтобы запомнить путь до текущей директории
 set(__ABS_PATH_TO_LIBS_SETTINGS__ ${CMAKE_CURRENT_LIST_DIR} CACHE STRING "Путь к директории cmake файла функций библиотек")

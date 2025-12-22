@@ -2,7 +2,7 @@
 include_guard()
 
 # Подключить служебный модуль
-include(__auxiliary)
+include(service)
 
 # Подключить модуль работы с библиотеками
 include(${CMAKE_CURRENT_LIST_DIR}/libs_settings.cmake)
