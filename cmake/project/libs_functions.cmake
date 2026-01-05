@@ -4,9 +4,6 @@ include_guard()
 # Подключить служебный модуль
 include(service)
 
-# Перекладная переменная, чтобы запомнить путь до текущей директории
-set(__ABS_PATH_TO_LIBS_SETTINGS__ ${CMAKE_CURRENT_LIST_DIR} CACHE STRING "Путь к директории cmake файла функций библиотек")
-
 #[[
     ИСПОЛЬЗОВАНИЕ
         add_module(MODULE_PATH <path>
@@ -93,14 +90,14 @@ endfunction()
     ИСПОЛЬЗОВАНИЕ
         link_module_libraries(TARGET <target>
                               MODULE_PATH <path>
-                              LIBS <target1> <target2> ...
+                              MODULE_LIBS <lib>...
                               [MODULE_DESTINATION_PATH <path>]
                               [PUBLIC | PRIVATE | INTERFACE])
 
     АРГУМЕНТЫ
         TARGET                      - имя таргета
         MODULE_PATH                 - исходный путь до модуля
-        LIBS                        - список таргетов библиотек, которые необходимо подключить
+        MODULE_LIBS                 - список таргетов библиотек, которые необходимо подключить
         MODULE_DESTINATION_PATH     - (опционально) конечный путь до модуля
         PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы видимости модулей для внешних таргетов (по умолчанию PUBLIC)
 
@@ -118,7 +115,7 @@ function(link_module_libraries)
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET" "MODULE_PATH")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "MODULE_DESTINATION_PATH")
-    set(__MULTIPLE_VALUE_ARGS__ "MODULE_TARGETS")
+    set(__MULTIPLE_VALUE_ARGS__ "MODULE_LIBS")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
@@ -152,15 +149,10 @@ function(link_module_libraries)
                          DEFAULT "PUBLIC"
                          OUT_VAR "__MODIFIER__")
 
-    __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_MODULE_TARGETS}")
+    __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_MODULE_LIBS}")
 
     # Подключить модули
-    foreach(__LIB__ ${${__PARSING_PREFIX__}_MODULE_TARGETS})
-
-        # TODO Проверить существование библиотеки
-#        if (NOT TARGET "${__LIB__}")
-#            message(FATAL_ERROR "Нет такого таргета: ${__LIB__}")
-#        endif()
+    foreach(__LIB__ ${${__PARSING_PREFIX__}_MODULE_LIBS})
 
         # Пропускать подключение таргета самого к себе
         if ("${${__PARSING_PREFIX__}_TARGET}" STREQUAL "${__LIB__}")

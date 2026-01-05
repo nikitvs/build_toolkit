@@ -5,7 +5,7 @@ include_guard()
 include(service)
 
 # Подключить модуль работы с библиотеками
-include(${CMAKE_CURRENT_LIST_DIR}/libs_settings.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/libs_functions.cmake)
 
 # Найти пакеты Qt
 find_package(QT NAMES Qt6 Qt5 REQUIRED)
@@ -99,11 +99,11 @@ function(link_qt_libraries)
     endforeach()
 
     # Подключить дополнительных функций Qt
-    link_modules(
+    link_module_libraries(
         ${__MODIFIER__}
-        TARGET_NAME "${__TARGET__}"
-        MODULE_PATH "${__ABS_PATH_TO_LIBS_SETTINGS__}/cpp_tools/lib_additional_qt"
-        MODULE_TARGETS "LibAdditionalQt"
+        TARGET "${__TARGET__}"
+        MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional_qt"
+        MODULE_LIBS "LibAdditionalQt"
     )
 
 endfunction()

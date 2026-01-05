@@ -329,10 +329,10 @@ function(set_targets_binary_dir)
     # Создать директорию сборки
     file(MAKE_DIRECTORY "${__BINARY_DIR__}")
 
-    # Проверить существование целевого таргета
+    # Проверить существование таргетов
     __check_targets_existence__(TARGETS ${${__PARSING_PREFIX__}_TARGETS})
 
-    # Подключить либы
+    # Задать директориб сборки
     foreach(__TARGET__ ${${__PARSING_PREFIX__}_TARGETS})
 
         set_target_properties("${__TARGET__}"
@@ -342,5 +342,154 @@ function(set_targets_binary_dir)
                               ARCHIVE_OUTPUT_DIRECTORY "${__BINARY_DIR__}")
 
     endforeach()
+
+endfunction()
+
+#[[
+ИСПОЛЬЗОВАНИЕ
+    __configure_target_with_build_type__(TARGET <target>)
+
+АРГУМЕНТЫ
+    TARGET  - целевой таргет
+
+ОПИСАНИЕ
+    Настроить параметры таргета в зависимости от типа сборки
+#]]
+
+function(__configure_target_with_build_type__)
+
+    #============================ Парсинг параметров функции ================================
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "__TYPED_TARGET_CONFIGURING_PREFIX__")
+
+    # Задать конфигурацию параметров парсинга
+    set(__ONE_VALUE_ARGS__ "TARGET")
+
+    # Парсить параметры
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          ""
+                          "${__ONE_VALUE_ARGS__}"
+                          ""
+                          "${ARGN}")
+
+    # Проверить обязательные параметры функции
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         PARAMETERS "${__ONE_VALUE_ARGS__}")
+
+    #======================== Конец парсинга параметров функции =============================
+
+    # Взять целевой таргет из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+
+    # Подключить модуль библиотечных функций
+    include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/libs_functions.cmake)
+
+    # Подключить библиотеку дополнительных функций
+    link_module_libraries(
+        PUBLIC
+        TARGET "${__TARGET__}"
+        MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional"
+        MODULE_LIBS "lib_additional"
+    )
+
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+
+        # Задать опции сборки в релизе
+        target_compile_options("${__TARGET__}" PRIVATE -O2)
+
+        # Определить c++ макрос выключенной отладки
+        target_compile_definitions("${__TARGET__}" PRIVATE NDEBUG)
+
+    elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
+
+        # TODO
+#        # Подключить либу с фичами для отладки
+#        link_subdir_libraries(
+#            PUBLIC
+#            TARGET "${__TARGET__}"
+#            MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/dev_tools"
+#            MODULE_TARGETS "dev_tools"
+#        )
+
+        # TODO
+#        # Подключить модуль диагностики
+#        include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../Diagnostics/DiagnosticsCode.cmake)
+
+#        # Использовать санитайзеры
+#        use_sanitizers(TARGET "${__TARGET__}")
+
+#        # Включить все предупреждения
+#        all_compilation_warn_on(TARGET "${__TARGET__}")
+
+#        # Использовать анализатор кода
+#        use_pvs(TARGET "${__TARGET__}")
+
+    endif()
+
+endfunction()
+
+#[[
+ИСПОЛЬЗОВАНИЕ
+    add_prepared_library(TARGET <target>
+                         SOURCES <source>...
+                         [EXCLUDE_FROM_ALL]
+                         [STATIC | SHARED | MODULE | OBJECT | INTERFACE])
+
+АРГУМЕНТЫ
+    TARGET                                      - целевой таргет
+    SOURCES                                     - список исходных текстов
+    EXCLUDE_FROM_ALL                            - исключить из таргета 'all'
+    STATIC, SHARED, MODULE, OBJECT, INTERFACE   - модификаторы, определяющие тип библиотеки
+
+ОПИСАНИЕ
+    Создать таргет библиотеки
+#]]
+
+function(add_prepared_library)
+
+    #============================ Парсинг параметров функции ================================
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "_PAR")
+
+    # Задать конфигурацию параметров парсинга
+    set(__OPTIONS__ "EXCLUDE_FROM_ALL")
+    set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT" "INTERFACE")
+    set(__ONE_VALUE_ARGS__ "TARGET")
+    set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
+
+    # Парсить параметры
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          "${__EXCLUSIVE_MODIFIERS__};${__OPTIONS__}"
+                          "${__ONE_VALUE_ARGS__}"
+                          "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                          "${ARGN}")
+
+    # Проверить обязательные параметры функции
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         PARAMETERS "${__ONE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+
+    #======================== Конец парсинга параметров функции =============================
+
+    # Извлечь использованный модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         OUT_VAR "__MODIFIER__")
+
+    if (${__PARSING_PREFIX__}_EXCLUDE_FROM_ALL)
+        set(__EXCLUDE__ EXCLUDE_FROM_ALL)
+    else()
+        unset(__EXCLUDE__)
+    endif()
+
+    # Взять целевой таргет из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+
+    add_library("${__TARGET__}" ${__MODIFIER__} ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
+
+    __configure_target_with_build_type__(TARGET "${__TARGET__}")
 
 endfunction()

@@ -54,10 +54,10 @@ function(__check_parameters__)
         set(__FUNCTION_PREFIX__ "${__PARSING_PREFIX__}")
 
         # Задать обязательные параметры для проверки
-        set(__REQUIRED_PARAMETERS__ "PREFIX;PARAMETERS")
+        set(__REQUIRED_PARAMETERS__ "PREFIX")
 
         # Задать опциональные параметры для проверки
-        set(__OPTIONAL_PARAMETERS__ "OPTIONAL_PARAMETERS;EXCLUSIVE_MODIFIERS")
+        set(__OPTIONAL_PARAMETERS__ "PARAMETERS;OPTIONAL_PARAMETERS;EXCLUSIVE_MODIFIERS")
 
     else()
 
@@ -316,38 +316,46 @@ function(__extract_modifier__)
     set(__PARSING_PREFIX__ "__MODIFIER_EXTRACTION_PREFIX__")
 
     # Задать конфигурацию параметров парсинга
-    set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX" "DEFAULT" "OUT_VAR")
+    set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX" "OUT_VAR")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "DEFAULT")
     set(__MULTIPLE_VALUE_ARGS__ "AVAILABLE_MODIFIERS")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
-                          "${__ONE_VALUE_ARGS__}"
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
 
     # Проверить обязательные параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}" PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
-
-    # Взять значение по умолчанию из аргумента
-    set(__DEFAULT__ "${${__PARSING_PREFIX__}_DEFAULT}")
 
     # Взять список доступных модификаторов из аргумента
     set(__AVAILABLE_MODIFIERS__ "${${__PARSING_PREFIX__}_AVAILABLE_MODIFIERS}")
 
-    # Ищем элемент
-    list(FIND ${__PARSING_PREFIX__}_AVAILABLE_MODIFIERS "${__DEFAULT__}" __INDEX__)
+    # Если задано значение по умолчанию
+    if (DEFINED "${__PARSING_PREFIX__}_DEFAULT")
 
-    if (__INDEX__ EQUAL -1)
-        message(FATAL_ERROR "Модификатор '${__DEFAULT__}' отсутствует в списке "
-                            "допустимых модификаторов (${__AVAILABLE_MODIFIERS__})")
+        # Взять значение по умолчанию из аргумента
+        set(__DEFAULT__ "${${__PARSING_PREFIX__}_DEFAULT}")
+
+        # Ищем элемент
+        list(FIND ${__PARSING_PREFIX__}_AVAILABLE_MODIFIERS "${__DEFAULT__}" __INDEX__)
+
+        if (__INDEX__ EQUAL -1)
+            message(FATAL_ERROR "Модификатор '${__DEFAULT__}' отсутствует в списке "
+                                "допустимых модификаторов (${__AVAILABLE_MODIFIERS__})")
+        endif()
+
+        # Значение по умолчанию
+        set(__RESULT__ "${__DEFAULT__}")
+
     endif()
-
-    # Значение по умолчанию
-    set(__RESULT__ "${__DEFAULT__}")
 
     # Проверить все доступные модификаторы
     foreach(__MODIFIER__ ${__AVAILABLE_MODIFIERS__})
@@ -429,3 +437,66 @@ function(__check_targets_existence__)
     endforeach()
 
 endfunction()
+
+#[[
+ИСПОЛЬЗОВАНИЕ
+    add_subdirs([FATAL_ERROR | WARNING])
+
+АРГУМЕНТЫ
+    FATAL_ERROR, WARNING    - (опционально) модификаторы проверки наличия CMake-проектов в директориях (по умолчанию WARNING)
+
+ОПИСАНИЕ
+    Подключить как CMake-проекты все директории рядом с файлом вызова функции
+#]]
+
+function(add_subdirs)
+
+    set(__PARSING_PREFIX__ "__ADDING_SUBDIRECTORIES_PREFIX__")
+
+    # Задать конфигурацию параметров парсинга
+    set(__EXCLUSIVE_MODIFIERS__ "FATAL_ERROR" "WARNING")
+
+    # Парсить параметры
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          "${__EXCLUSIVE_MODIFIERS__}"
+                          ""
+                          ""
+                          "${ARGN}")
+
+    # Проверить обязательные параметры функции
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+
+    #======================== Конец парсинга параметров функции =============================
+
+    # Извлечь использованный модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         DEFAULT "WARNING"
+                         OUT_VAR "__MODIFIER__")
+
+    get_filename_component(__CMAKE_FILENAME__ "${CMAKE_CURRENT_LIST_FILE}" NAME)
+
+    # Найти все поддиректории
+    file(GLOB __SUBDIRS__
+        LIST_DIRECTORIES true
+        "*")
+
+    foreach(__DIR__ ${__SUBDIRS__})
+
+        # Искать только директории
+        if(NOT IS_DIRECTORY ${__DIR__})
+            continue()
+        endif()
+
+        # Проверять наличие файла 'CMakeLists.txt'
+        if(EXISTS ${__DIR__}/${__CMAKE_FILENAME__})
+            add_subdirectory(${__DIR__})
+        else()
+            message(${__MODIFIER__} "Директория ${__DIR__} не имеет файла ${__CMAKE_FILENAME__}!")
+        endif()
+
+    endforeach()
+
+endfunction()
+

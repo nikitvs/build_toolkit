@@ -9,7 +9,7 @@ project(lib_additional
 )
 
 # Определить имя таргета проекта
-set(TARGET_NAME LibAdditional)
+set(TARGET_NAME lib_additional)
 
 #=========================== Настройки таргетов =================================
 
