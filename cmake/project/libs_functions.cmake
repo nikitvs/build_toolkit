@@ -26,11 +26,15 @@ function(add_module)
     set(__PARSING_PREFIX__ "__ADDING_MODULE_PREFIX__")
 
     # Задать конфигурацию параметров парсинга
-    set(__ONE_VALUE_ARGS__ MODULE_PATH)
-    set(__OPTIONAL_ONE_VALUE_ARGS__ MODULE_DESTINATION_PATH)
+    set(__ONE_VALUE_ARGS__ "MODULE_PATH")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "MODULE_DESTINATION_PATH")
 
     # Парсить параметры
-    cmake_parse_arguments("${__PARSING_PREFIX__}" "" "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}" "" "${ARGN}")
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          ""
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
+                          ""
+                          "${ARGN}")
 
     # Проверить параметры функции
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
@@ -137,17 +141,21 @@ function(link_module_libraries)
 
     # Подключить модуль
     if (DEFINED "${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH")
+
         add_module(MODULE_PATH "${${__PARSING_PREFIX__}_MODULE_PATH}"
                    MODULE_DESTINATION_PATH "${${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH}")
+
     else()
+
         add_module(MODULE_PATH "${${__PARSING_PREFIX__}_MODULE_PATH}")
+
     endif()
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "PUBLIC"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PUBLIC")
 
     __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_MODULE_LIBS}")
 

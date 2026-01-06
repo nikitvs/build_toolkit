@@ -2,14 +2,14 @@
 # TODO нужно?
 #include_guard(GLOBAL)
 
-project(lib_additional
+project("BuildToolkitAdditional"
         VERSION 1.0
         LANGUAGES CXX
         DESCRIPTION "Проект дополнительных функций"
 )
 
 # Определить имя таргета проекта
-set(TARGET_NAME lib_additional)
+set(TARGET_NAME "${PROJECT_NAME}")
 
 #=========================== Настройки таргетов =================================
 

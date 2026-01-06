@@ -2,14 +2,14 @@
 # TODO нужно?
 #include_guard(GLOBAL)
 
-project(lib_additional_qt
+project("BuildToolkitAdditionalQt"
         VERSION 1.0
         LANGUAGES CXX
         DESCRIPTION "Проект дополнительных функций Qt"
 )
 
 # Определить имя таргета проекта
-set(TARGET_NAME LibAdditionalQt)
+set(TARGET_NAME "${PROJECT_NAME}")
 
 #=========================== Настройки таргетов =================================
 

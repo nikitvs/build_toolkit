@@ -7,12 +7,6 @@ include(service)
 # Подключить модуль работы с библиотеками
 include(${CMAKE_CURRENT_LIST_DIR}/libs_functions.cmake)
 
-# Найти пакеты Qt
-find_package(QT NAMES Qt6 Qt5 REQUIRED)
-
-# Запомнить глобально версию Qt
-set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
-
 #[[
     ИСПОЛЬЗОВАНИЕ
         link_qt_libraries(TARGET <target>
@@ -35,6 +29,14 @@ set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальна�
 #]]
 
 function(link_qt_libraries)
+
+    # TODO проверить, что поиск пакетов внутри функции работает нормально
+    # TODO потом перенести в общий .cmake файл
+    # Найти пакеты Qt
+    find_package(QT NAMES Qt6 Qt5 REQUIRED)
+
+    # Запомнить глобально версию Qt
+    set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
 
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__QT_LIBS_LINKING_PREFIX__")
@@ -78,8 +80,8 @@ function(link_qt_libraries)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "PUBLIC"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PUBLIC")
 
     # Найти библиотеки Qt
     find_package("Qt${__VERSION__}" COMPONENTS "${${__PARSING_PREFIX__}_QT_LIBS}" REQUIRED)
@@ -103,7 +105,7 @@ function(link_qt_libraries)
         ${__MODIFIER__}
         TARGET "${__TARGET__}"
         MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional_qt"
-        MODULE_LIBS "LibAdditionalQt"
+        MODULE_LIBS "BuildToolkitAdditionalQt"
     )
 
 endfunction()

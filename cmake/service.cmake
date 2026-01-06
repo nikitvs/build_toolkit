@@ -295,14 +295,14 @@ endfunction()
     ИСПОЛЬЗОВАНИЕ
         __extract_modifier__(FUNCTION_PREFIX <prefix>
                              AVAILABLE_MODIFIERS <modifier>...
-                             DEFAULT <modifier>
-                             OUT_VAR <outputVariable>)
+                             OUT_VAR <outputVariable>
+                             [DEFAULT <modifier>])
 
     АРГУМЕНТЫ
         FUNCTION_PREFIX     - префикс функции, для которой вызвано извлечение модификатора
         AVAILABLE_MODIFIERS - допустимые модификаторы
-        DEFAULT             - модификатор по умолчанию
         OUT_VAR             - имя переменной, куда запишется результат
+        DEFAULT             - (опционально) модификатор по умолчанию
 
     ОПИСАНИЕ
         Извлечь использованный при вызове фукции модификатор
@@ -386,6 +386,84 @@ endfunction()
 
 #[[
     ИСПОЛЬЗОВАНИЕ
+        __extract_arg_value__(FUNCTION_PREFIX <prefix>
+                              ARG_NAME <name>
+                              OUT_VAR <outputVariable>
+                              [DEFAULT <value>])
+
+    АРГУМЕНТЫ
+        FUNCTION_PREFIX     - префикс функции, для которой вызвано извлечение модификатора
+        FUNCTION_ARG_NAME   - имя аргумента функции для извлечения значения
+        OUT_VAR             - имя переменной, куда запишется результат
+        DEFAULT             - (опционально) модификатор по умолчанию
+
+    ОПИСАНИЕ
+        Извлечь использованный при вызове фукции модификатор
+        Если модификатор не выбран, вернуть значение по умолчанию
+        Результат записывается в указанную переменную
+#]]
+
+function(__extract_arg_value__)
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "__ARG_VALUE_EXTRACTION_PREFIX__")
+
+    # Задать конфигурацию параметров парсинга
+    set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX" "FUNCTION_ARG_NAME" "OUT_VAR")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "DEFAULT")
+
+    # Парсить параметры
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          ""
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
+                          ""
+                          "${ARGN}")
+
+
+    # Проверить обязательные параметры функции
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         PARAMETERS "${__ONE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
+
+    #======================== Конец парсинга параметров функции =============================
+
+    # Если задано значение по умолчанию
+    if (DEFINED "${__PARSING_PREFIX__}_DEFAULT")
+
+        # Взять значение по умолчанию из аргумента
+        set(__RESULT__ "${${__PARSING_PREFIX__}_DEFAULT}")
+
+    endif()
+
+    # Собрать имя аргумента функции
+    set(__FUNCTION_ARGUMENT__ "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}_${${__PARSING_PREFIX__}_FUNCTION_ARG_NAME}")
+
+    # Проверить использование аргумента
+    if (DEFINED "${__FUNCTION_ARGUMENT__}")
+
+        # Взять значение из аргумента
+        set(__RESULT__ "${${__FUNCTION_ARGUMENT__}}")
+
+    endif()
+
+    # Если есть результат
+    if (DEFINED "__RESULT__")
+
+        # Взять имя выходной переменной из аргумента
+        set(__OUT_VAR__ "${${__PARSING_PREFIX__}_OUT_VAR}")
+
+        # Записать результат в выходную переменную
+        set(${__OUT_VAR__} "${__RESULT__}")
+
+        # Вернуть значение выходной переменной
+        return(PROPAGATE ${__OUT_VAR__})
+
+    endif()
+
+endfunction()
+
+#[[
+    ИСПОЛЬЗОВАНИЕ
         __check_targets_existence__(TARGETS <target>...
                                     [FATAL_ERROR | WARNING])
 
@@ -423,8 +501,8 @@ function(__check_targets_existence__)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "FATAL_ERROR"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "FATAL_ERROR")
 
     # Для найденных файлов с директориями
     foreach(__TARGET__ ${${__PARSING_PREFIX__}_TARGETS})
@@ -472,8 +550,8 @@ function(add_subdirs)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "WARNING"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "WARNING")
 
     get_filename_component(__CMAKE_FILENAME__ "${CMAKE_CURRENT_LIST_FILE}" NAME)
 

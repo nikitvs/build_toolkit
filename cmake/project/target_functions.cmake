@@ -117,8 +117,8 @@ function(set_sources_to_target)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "PRIVATE"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PRIVATE")
 
     # Задать исходники таргету
     target_sources("${__TARGET__}" ${__MODIFIER__} "${__SOURCES__}")
@@ -171,8 +171,8 @@ function(set_include_dirs_to_target)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "PUBLIC"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PUBLIC")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -246,8 +246,8 @@ function(set_interface_to_target)
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
-                         DEFAULT "PUBLIC"
-                         OUT_VAR "__MODIFIER__")
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PUBLIC")
 
     # Взять список интерфейсных директорий из аргумента
     set(__INTERFACE_DIRS__ "${${__PARSING_PREFIX__}_INTERFACE_DIRS}")
@@ -347,10 +347,14 @@ endfunction()
 
 #[[
 ИСПОЛЬЗОВАНИЕ
-    __configure_target_with_build_type__(TARGET <target>)
+    __configure_target_with_build_type__(TARGET <target>
+                                         [COMPILE_OPTS_R <options>]
+                                         [COMPILE_OPTS_D <options>])
 
 АРГУМЕНТЫ
-    TARGET  - целевой таргет
+    TARGET          - целевой таргет
+    COMPILE_OPTS_R  - (опционально) опции сборки в релизе
+    COMPILE_OPTS_D  - (опционально) опции сборки в отладке
 
 ОПИСАНИЕ
     Настроить параметры таргета в зависимости от типа сборки
@@ -365,17 +369,19 @@ function(__configure_target_with_build_type__)
 
     # Задать конфигурацию параметров парсинга
     set(__ONE_VALUE_ARGS__ "TARGET")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "COMPILE_OPTS_R" "COMPILE_OPTS_D")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
-                          "${__ONE_VALUE_ARGS__}"
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}")
+                         PARAMETERS "${__ONE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -390,18 +396,32 @@ function(__configure_target_with_build_type__)
         PUBLIC
         TARGET "${__TARGET__}"
         MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional"
-        MODULE_LIBS "lib_additional"
+        MODULE_LIBS "BuildToolkitAdditional"
     )
 
     if(CMAKE_BUILD_TYPE MATCHES "Release")
 
-        # Задать опции сборки в релизе
-        target_compile_options("${__TARGET__}" PRIVATE -O2)
+        # Определить опции сборки
+        __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                              FUNCTION_ARG_NAME "COMPILE_OPTS_R"
+                              OUT_VAR "__COMPILE_OPTS_R__"
+                              DEFAULT "-O2")
+
+        # Задать опции сборки
+        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTS_R__}")
 
         # Определить c++ макрос выключенной отладки
         target_compile_definitions("${__TARGET__}" PRIVATE NDEBUG)
 
     elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
+
+        # Определить опции сборки
+        __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                              FUNCTION_ARG_NAME "COMPILE_OPTS_D"
+                              OUT_VAR "__COMPILE_OPTS_D__")
+
+        # Задать опции сборки
+        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTS_D__}")
 
         # TODO
 #        # Подключить либу с фичами для отладки
