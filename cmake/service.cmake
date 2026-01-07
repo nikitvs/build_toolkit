@@ -410,20 +410,20 @@ function(__extract_arg_value__)
 
     # Задать конфигурацию параметров парсинга
     set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX" "FUNCTION_ARG_NAME" "OUT_VAR")
-    set(__OPTIONAL_ONE_VALUE_ARGS__ "DEFAULT")
+    set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "DEFAULT")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
-                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
-                          ""
+                          "${__ONE_VALUE_ARGS__}"
+                          "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
 
     # Проверить обязательные параметры функции
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
                          PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 

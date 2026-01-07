@@ -61,26 +61,20 @@ function(set_sources_to_target)
     # Проверить существование целевого таргета
     __check_targets_existence__(TARGETS "${__TARGET__}")
 
-    # Если задан список директорий
-    if(DEFINED "${__PARSING_PREFIX__}_SOURCE_DIRS")
-        # Взять список директорий из аргумента
-        set(__SEARCH_DIRECTORIES__ "${${__PARSING_PREFIX__}_SOURCE_DIRS}")
-    else()
-        # Задать директорию вызова функции как диреторию поиска
-        set(__SEARCH_DIRECTORIES__ "${CMAKE_CURRENT_LIST_DIR}")
-    endif()
+    # Задать список директорий поиска
+    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          FUNCTION_ARG_NAME "SOURCE_DIRS"
+                          OUT_VAR "__SEARCH_DIRECTORIES__"
+                          DEFAULT "${CMAKE_CURRENT_LIST_DIR}")
 
     # Проверить существование директорий
     __check_directories_existence__(DIRS "${__SEARCH_DIRECTORIES__}")
 
-    # Если задан список регулярных выражений
-    if(DEFINED "${__PARSING_PREFIX__}_REGEXP")
-        # Взять список регулярных выражений из аргумента
-        set(__SEARCH_REG_EXPRESSIONS__ "${${__PARSING_PREFIX__}_REGEXP}")
-    else()
-        # Взять список регулярных выражений по умолчанию
-        set(__SEARCH_REG_EXPRESSIONS__ "*.cpp" "*.h")
-    endif()
+    # Задать список регулярных выражений
+    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          FUNCTION_ARG_NAME "REGEXP"
+                          OUT_VAR "__SEARCH_REG_EXPRESSIONS__"
+                          DEFAULT "*.cpp" "*.h")
 
     # Задать параметр рекурсивного поиска
     if (${__PARSING_PREFIX__}_NO_RECURSION)

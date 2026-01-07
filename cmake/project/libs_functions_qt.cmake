@@ -68,14 +68,11 @@ function(link_qt_libraries)
         message(FATAL_ERROR "Не существует таргета: ${__TARGET__}")
     endif()
 
-    # Если задана версия
-    if(DEFINED "${__PARSING_PREFIX__}_VERSION")
-        # Взять версию из аргумента
-        set(__VERSION__ "${${__PARSING_PREFIX__}_VERSION}")
-    else()
-        # Задать наибольшую возможную версию
-        set(__VERSION__ "${QT_VERSION_MAJOR}")
-    endif()
+    # Задать наибольшую версию Qt
+    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          FUNCTION_ARG_NAME "VERSION"
+                          OUT_VAR "__VERSION__"
+                          DEFAULT "${QT_VERSION_MAJOR}")
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"

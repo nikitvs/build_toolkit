@@ -72,18 +72,11 @@ function(add_module)
         message(FATAL_ERROR "Модуль '${__ABS_PATH_TO_MODULE__}' не является частью основного проекта")
     endif()
 
-    # Если задан кастомный путь сборки
-    if (DEFINED "${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH")
-
-        # Путь сборки модуля
-        set(__MODULE_BINARY_DIR__ "${${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH}")
-
-    else()
-
-        # Путь сборки модуля по умолчанию
-        set(__MODULE_BINARY_DIR__ "${CMAKE_BINARY_DIR}/${__REL_PATH_TO_MODULE__}")
-
-    endif()
+    # Задать путь сборки модуля
+    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          FUNCTION_ARG_NAME "MODULE_DESTINATION_PATH"
+                          OUT_VAR "__MODULE_BINARY_DIR__"
+                          DEFAULT "${CMAKE_BINARY_DIR}/${__REL_PATH_TO_MODULE__}")
 
     # Подключить модуль
     add_subdirectory("${__ABS_PATH_TO_MODULE__}" "${__MODULE_BINARY_DIR__}")
