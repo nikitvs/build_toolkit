@@ -108,7 +108,7 @@ function(set_sources_to_target)
         list(FILTER __SOURCES__ EXCLUDE REGEX "${__REGEXP__}")
     endforeach()
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
@@ -162,7 +162,7 @@ function(set_include_dirs_to_target)
 
     #======================== Конец парсинга параметров функции =============================
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
@@ -237,7 +237,7 @@ function(set_interface_to_target)
 
     #======================== Конец парсинга параметров функции =============================
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
@@ -341,14 +341,12 @@ endfunction()
 
 #[[
 ИСПОЛЬЗОВАНИЕ
-    __configure_target_with_build_type__(TARGET <target>
-                                         [RELEASE_OPTIONS <options>]
-                                         [DEBUG_OPTIONS <options>])
+    __configure_target_with_build_type__(FUNCTION_PREFIX <prefix>
+                                         TARGET <target>)
 
 АРГУМЕНТЫ
+    FUNCTION_PREFIX - префикс вызвавшей функции
     TARGET          - целевой таргет
-    RELEASE_OPTIONS - (опционально) опции сборки в релизе
-    DEBUG_OPTIONS   - (опционально) опции сборки в отладке
 
 ОПИСАНИЕ
     Настроить параметры таргета в зависимости от типа сборки
@@ -362,20 +360,18 @@ function(__configure_target_with_build_type__)
     set(__PARSING_PREFIX__ "__TYPED_TARGET_CONFIGURING_PREFIX__")
 
     # Задать конфигурацию параметров парсинга
-    set(__ONE_VALUE_ARGS__ "TARGET")
-    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
+    set(__ONE_VALUE_ARGS__ "TARGET" "FUNCTION_PREFIX")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
-                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
+                          "${__ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
+                         PARAMETERS "${__ONE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -390,19 +386,18 @@ function(__configure_target_with_build_type__)
         PUBLIC
         TARGET "${__TARGET__}"
         MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional"
-        MODULE_LIBS "BuildToolkitAdditional"
-    )
+        MODULE_LIBS "BuildToolkitAdditional")
 
     if(CMAKE_BUILD_TYPE MATCHES "Release")
 
         # Определить опции сборки
-        __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+        __extract_arg_value__(FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
                               FUNCTION_ARG_NAME "RELEASE_OPTIONS"
-                              OUT_VAR "__RELEASE_OPTIONS__"
+                              OUT_VAR "__COMPILE_OPTIONS__"
                               DEFAULT "-O2")
 
         # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__RELEASE_OPTIONS__}")
+        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTIONS__}")
 
         # Определить c++ макрос выключенной отладки
         target_compile_definitions("${__TARGET__}" PRIVATE NDEBUG)
@@ -410,21 +405,19 @@ function(__configure_target_with_build_type__)
     elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
         # Определить опции сборки
-        __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+        __extract_arg_value__(FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
                               FUNCTION_ARG_NAME "DEBUG_OPTIONS"
-                              OUT_VAR "__DEBUG_OPTIONS__")
+                              OUT_VAR "__COMPILE_OPTIONS__")
 
         # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__DEBUG_OPTIONS__}")
+        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTIONS__}")
 
-        # TODO
-#        # Подключить либу с фичами для отладки
-#        link_subdir_libraries(
-#            PUBLIC
-#            TARGET "${__TARGET__}"
-#            MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/dev_tools"
-#            MODULE_TARGETS "dev_tools"
-#        )
+        # Подключить либу с фичами для отладки
+        link_module_libraries(
+            PUBLIC
+            TARGET "${__TARGET__}"
+            MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/dev_tools"
+            MODULE_LIBS "BuildToolkitDevTools")
 
         # TODO
 #        # Подключить модуль диагностики
@@ -448,13 +441,17 @@ endfunction()
     add_prepared_library(TARGET <target>
                          SOURCES <source>...
                          [EXCLUDE_FROM_ALL]
-                         [STATIC | SHARED | MODULE | OBJECT ])
+                         [STATIC | SHARED | MODULE | OBJECT]
+                         [RELEASE_OPTIONS <options>]
+                         [DEBUG_OPTIONS <options>])
 
 АРГУМЕНТЫ
     TARGET                          - целевой таргет
     SOURCES                         - список исходных текстов
     EXCLUDE_FROM_ALL                - исключить из таргета 'all'
     STATIC, SHARED, MODULE, OBJECT  - модификаторы, определяющие тип библиотеки
+    RELEASE_OPTIONS                 - (опционально) опции сборки в релизе
+    DEBUG_OPTIONS                   - (опционально) опции сборки в отладке
 
 ОПИСАНИЕ
     Создать таргет библиотеки
@@ -465,25 +462,26 @@ function(add_prepared_library)
     #============================ Парсинг параметров функции ================================
 
     # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "_PAR")
+    set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
 
     # Задать конфигурацию параметров парсинга
     set(__OPTIONS__ "EXCLUDE_FROM_ALL")
     set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
     set(__ONE_VALUE_ARGS__ "TARGET")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__};${__OPTIONS__}"
-                          "${__ONE_VALUE_ARGS__}"
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
     __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
                          PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                          EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
@@ -503,6 +501,7 @@ function(add_prepared_library)
 
     add_library("${__TARGET__}" ${__MODIFIER__} ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
 
-    __configure_target_with_build_type__(TARGET "${__TARGET__}")
+    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                                         TARGET "${__TARGET__}")
 
 endfunction()

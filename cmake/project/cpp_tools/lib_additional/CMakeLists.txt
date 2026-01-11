@@ -1,7 +1,3 @@
-# Фильтровать повторное подключение таргета
-# TODO нужно?
-#include_guard(GLOBAL)
-
 project("BuildToolkitAdditional"
         VERSION 1.0
         LANGUAGES CXX

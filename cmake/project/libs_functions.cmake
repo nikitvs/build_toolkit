@@ -147,7 +147,7 @@ function(link_module_libraries)
 
     endif()
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
@@ -237,7 +237,7 @@ function(link_qt_libraries)
                           OUT_VAR "__VERSION__"
                           DEFAULT "${QT_VERSION_MAJOR}")
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
@@ -265,7 +265,6 @@ function(link_qt_libraries)
         ${__MODIFIER__}
         TARGET "${__TARGET__}"
         MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional_qt"
-        MODULE_LIBS "BuildToolkitAdditionalQt"
-    )
+        MODULE_LIBS "BuildToolkitAdditionalQt")
 
 endfunction()

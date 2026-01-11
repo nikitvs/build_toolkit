@@ -1,7 +1,7 @@
-project("BuildToolkitAdditionalQt"
+project("BuildToolkitDevTools"
         VERSION 1.0
         LANGUAGES CXX
-        DESCRIPTION "Проект дополнительных функций Qt"
+        DESCRIPTION "Проект дополнительных функций"
 )
 
 # Определить имя таргета проекта
