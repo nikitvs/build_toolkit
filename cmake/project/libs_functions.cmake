@@ -129,8 +129,11 @@ function(link_module_libraries)
 
     #======================== Конец парсинга параметров функции =============================
 
+    # Взять целевой таргет из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+
     # Проверить существование основного таргета
-    __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_TARGET}")
+    __check_targets_existence__(TARGETS "${__TARGET__}")
 
     # Подключить модуль
     if (DEFINED "${__PARSING_PREFIX__}_MODULE_DESTINATION_PATH")
@@ -156,13 +159,113 @@ function(link_module_libraries)
     foreach(__LIB__ ${${__PARSING_PREFIX__}_MODULE_LIBS})
 
         # Пропускать подключение таргета самого к себе
-        if ("${${__PARSING_PREFIX__}_TARGET}" STREQUAL "${__LIB__}")
+        if ("${__TARGET__}" STREQUAL "${__LIB__}")
             continue()
         endif()
 
         # Подключить библиотеку
-        target_link_libraries("${${__PARSING_PREFIX__}_TARGET}" ${__MODIFIER__} "${__LIB__}")
+        target_link_libraries("${__TARGET__}" ${__MODIFIER__} "${__LIB__}")
 
     endforeach()
+
+endfunction()
+
+#[[
+    ИСПОЛЬЗОВАНИЕ
+        link_qt_libraries(TARGET <target>
+                          QT_LIBS <lib>...
+                          [VERSION <version>]
+                          [PUBLIC | PRIVATE | INTERFACE])
+
+    АРГУМЕНТЫ
+        TARGET                      - целевой таргет
+        QT_LIBS                     - список библиотек Qt
+        VERSION                     - (опционально) версия пакета Qt
+        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы доступа
+
+    ОПИСАНИЕ
+        Найти и подключить к целевому таргету указанные библиотеки Qt
+        Опционально можно указать версию пакета Qt, из которого будут браться библиотеки
+        По умолчанию берется наибольшая версия из доступных
+        Также опционально можно указать модификатор видимости для внешних таргетов
+        По умолчанию берется модификатор PUBLIC
+#]]
+
+function(link_qt_libraries)
+
+    # TODO проверить, что поиск пакетов внутри функции работает нормально
+    # TODO потом перенести в общий .cmake файл
+    # Найти пакеты Qt
+    find_package(QT NAMES Qt6 Qt5 REQUIRED)
+
+    # Запомнить глобально версию Qt
+    set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "__QT_LIBS_LINKING_PREFIX__")
+
+    # Задать конфигурацию параметров парсинга
+    set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
+    set(__ONE_VALUE_ARGS__ "TARGET")
+    set(__MULTIPLE_VALUE_ARGS__ "QT_LIBS")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "VERSION")
+
+    # Парсить параметры функции
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          "${__EXCLUSIVE_MODIFIERS__}"
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
+                          "${__MULTIPLE_VALUE_ARGS__}"
+                          "${ARGN}")
+
+    # Проверить параметры функции
+    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
+                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
+                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+
+    # Взять целевой таргет из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+
+    # Проверить существование таргета
+    if (NOT TARGET "${__TARGET__}")
+        message(FATAL_ERROR "Не существует таргета: ${__TARGET__}")
+    endif()
+
+    # Задать наибольшую версию Qt
+    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          FUNCTION_ARG_NAME "VERSION"
+                          OUT_VAR "__VERSION__"
+                          DEFAULT "${QT_VERSION_MAJOR}")
+
+    # Извлечь использованный модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PUBLIC")
+
+    # Найти библиотеки Qt
+    find_package("Qt${__VERSION__}" COMPONENTS "${${__PARSING_PREFIX__}_QT_LIBS}" REQUIRED)
+
+    # Включить MOC для таргета
+    # NOTE атрибуты наследуются хреново, поэтому следует вызывать текущую функцию (хотя бы для подключения Core)
+    # для всех таргетов, наследующих таргетам, использующим Qt
+    set_target_properties("${__TARGET__}" PROPERTIES
+                          AUTOUIC ON
+                          AUTOMOC ON
+                          AUTORCC ON
+    )
+
+    # Подключить библиотеки Qt
+    foreach(__LIB__ ${${__PARSING_PREFIX__}_QT_LIBS})
+        target_link_libraries("${__TARGET__}" ${__MODIFIER__} "Qt${__VERSION__}::${__LIB__}")
+    endforeach()
+
+    # Подключить дополнительных функций Qt
+    link_module_libraries(
+        ${__MODIFIER__}
+        TARGET "${__TARGET__}"
+        MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional_qt"
+        MODULE_LIBS "BuildToolkitAdditionalQt"
+    )
 
 endfunction()

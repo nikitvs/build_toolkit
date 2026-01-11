@@ -326,7 +326,7 @@ function(set_targets_binary_dir)
     # Проверить существование таргетов
     __check_targets_existence__(TARGETS ${${__PARSING_PREFIX__}_TARGETS})
 
-    # Задать директориб сборки
+    # Задать директорию сборки
     foreach(__TARGET__ ${${__PARSING_PREFIX__}_TARGETS})
 
         set_target_properties("${__TARGET__}"
@@ -342,13 +342,13 @@ endfunction()
 #[[
 ИСПОЛЬЗОВАНИЕ
     __configure_target_with_build_type__(TARGET <target>
-                                         [COMPILE_OPTS_R <options>]
-                                         [COMPILE_OPTS_D <options>])
+                                         [RELEASE_OPTIONS <options>]
+                                         [DEBUG_OPTIONS <options>])
 
 АРГУМЕНТЫ
     TARGET          - целевой таргет
-    COMPILE_OPTS_R  - (опционально) опции сборки в релизе
-    COMPILE_OPTS_D  - (опционально) опции сборки в отладке
+    RELEASE_OPTIONS - (опционально) опции сборки в релизе
+    DEBUG_OPTIONS   - (опционально) опции сборки в отладке
 
 ОПИСАНИЕ
     Настроить параметры таргета в зависимости от типа сборки
@@ -363,7 +363,7 @@ function(__configure_target_with_build_type__)
 
     # Задать конфигурацию параметров парсинга
     set(__ONE_VALUE_ARGS__ "TARGET")
-    set(__OPTIONAL_ONE_VALUE_ARGS__ "COMPILE_OPTS_R" "COMPILE_OPTS_D")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
 
     # Парсить параметры
     cmake_parse_arguments("${__PARSING_PREFIX__}"
@@ -397,12 +397,12 @@ function(__configure_target_with_build_type__)
 
         # Определить опции сборки
         __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                              FUNCTION_ARG_NAME "COMPILE_OPTS_R"
-                              OUT_VAR "__COMPILE_OPTS_R__"
+                              FUNCTION_ARG_NAME "RELEASE_OPTIONS"
+                              OUT_VAR "__RELEASE_OPTIONS__"
                               DEFAULT "-O2")
 
         # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTS_R__}")
+        target_compile_options("${__TARGET__}" PRIVATE "${__RELEASE_OPTIONS__}")
 
         # Определить c++ макрос выключенной отладки
         target_compile_definitions("${__TARGET__}" PRIVATE NDEBUG)
@@ -411,11 +411,11 @@ function(__configure_target_with_build_type__)
 
         # Определить опции сборки
         __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                              FUNCTION_ARG_NAME "COMPILE_OPTS_D"
-                              OUT_VAR "__COMPILE_OPTS_D__")
+                              FUNCTION_ARG_NAME "DEBUG_OPTIONS"
+                              OUT_VAR "__DEBUG_OPTIONS__")
 
         # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTS_D__}")
+        target_compile_options("${__TARGET__}" PRIVATE "${__DEBUG_OPTIONS__}")
 
         # TODO
 #        # Подключить либу с фичами для отладки
@@ -448,13 +448,13 @@ endfunction()
     add_prepared_library(TARGET <target>
                          SOURCES <source>...
                          [EXCLUDE_FROM_ALL]
-                         [STATIC | SHARED | MODULE | OBJECT | INTERFACE])
+                         [STATIC | SHARED | MODULE | OBJECT ])
 
 АРГУМЕНТЫ
-    TARGET                                      - целевой таргет
-    SOURCES                                     - список исходных текстов
-    EXCLUDE_FROM_ALL                            - исключить из таргета 'all'
-    STATIC, SHARED, MODULE, OBJECT, INTERFACE   - модификаторы, определяющие тип библиотеки
+    TARGET                          - целевой таргет
+    SOURCES                         - список исходных текстов
+    EXCLUDE_FROM_ALL                - исключить из таргета 'all'
+    STATIC, SHARED, MODULE, OBJECT  - модификаторы, определяющие тип библиотеки
 
 ОПИСАНИЕ
     Создать таргет библиотеки
@@ -469,7 +469,7 @@ function(add_prepared_library)
 
     # Задать конфигурацию параметров парсинга
     set(__OPTIONS__ "EXCLUDE_FROM_ALL")
-    set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT" "INTERFACE")
+    set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
@@ -488,16 +488,15 @@ function(add_prepared_library)
 
     #======================== Конец парсинга параметров функции =============================
 
-    # Извлечь использованный модификатор
+    # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__")
 
-    if (${__PARSING_PREFIX__}_EXCLUDE_FROM_ALL)
-        set(__EXCLUDE__ EXCLUDE_FROM_ALL)
-    else()
-        unset(__EXCLUDE__)
-    endif()
+    # Извлечь модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "EXCLUDE_FROM_ALL"
+                         OUT_VAR "__EXCLUDE__")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")

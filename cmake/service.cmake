@@ -373,14 +373,19 @@ function(__extract_modifier__)
 
     endforeach()
 
-    # Взять имя выходной переменной из аргумента
-    set(__OUT_VAR__ "${${__PARSING_PREFIX__}_OUT_VAR}")
+    # Если есть результат
+    if (DEFINED "__RESULT__")
 
-    # Записать результат в выходную переменную
-    set(${__OUT_VAR__} "${__RESULT__}")
+        # Взять имя выходной переменной из аргумента
+        set(__OUT_VAR__ "${${__PARSING_PREFIX__}_OUT_VAR}")
 
-    # Вернуть значение выходной переменной
-    return(PROPAGATE ${__OUT_VAR__})
+        # Записать результат в выходную переменную
+        set(${__OUT_VAR__} "${__RESULT__}")
+
+        # Вернуть значение выходной переменной
+        return(PROPAGATE ${__OUT_VAR__})
+
+    endif()
 
 endfunction()
 
