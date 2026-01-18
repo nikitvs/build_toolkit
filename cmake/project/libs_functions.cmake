@@ -1,8 +1,7 @@
-# Фильровать многочисленные включения
 include_guard()
 
 # Подключить служебный модуль
-include(service)
+include(${CMAKE_CURRENT_LIST_DIR}/../service/service.cmake)
 
 #[[
     ИСПОЛЬЗОВАНИЕ
@@ -37,9 +36,9 @@ function(add_module)
                           "${ARGN}")
 
     # Проверить параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -73,9 +72,9 @@ function(add_module)
     endif()
 
     # Задать путь сборки модуля
-    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                          FUNCTION_ARG_NAME "MODULE_DESTINATION_PATH"
+    __extract_arg_value__(ARG "MODULE_DESTINATION_PATH"
                           OUT_VAR "__MODULE_BINARY_DIR__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                           DEFAULT "${CMAKE_BINARY_DIR}/${__REL_PATH_TO_MODULE__}")
 
     # Подключить модуль
@@ -122,10 +121,10 @@ function(link_module_libraries)
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -218,10 +217,10 @@ function(link_qt_libraries)
                           "${ARGN}")
 
     # Проверить параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -232,9 +231,9 @@ function(link_qt_libraries)
     endif()
 
     # Задать наибольшую версию Qt
-    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                          FUNCTION_ARG_NAME "VERSION"
+    __extract_arg_value__(ARG "VERSION"
                           OUT_VAR "__VERSION__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                           DEFAULT "${QT_VERSION_MAJOR}")
 
     # Извлечь модификатор

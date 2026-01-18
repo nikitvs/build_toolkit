@@ -1,8 +1,7 @@
-# Фильровать многочисленные включения
 include_guard()
 
 # Подключить служебный модуль
-include(service)
+include(${CMAKE_CURRENT_LIST_DIR}/../service/service.cmake)
 
 #[[
     ИСПОЛЬЗОВАНИЕ
@@ -48,10 +47,10 @@ function(set_sources_to_target)
                           "${ARGN}")
 
     # Проверить параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -62,18 +61,18 @@ function(set_sources_to_target)
     __check_targets_existence__(TARGETS "${__TARGET__}")
 
     # Задать список директорий поиска
-    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                          FUNCTION_ARG_NAME "SOURCE_DIRS"
+    __extract_arg_value__(ARG "SOURCE_DIRS"
                           OUT_VAR "__SEARCH_DIRECTORIES__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                           DEFAULT "${CMAKE_CURRENT_LIST_DIR}")
 
     # Проверить существование директорий
     __check_directories_existence__(DIRS "${__SEARCH_DIRECTORIES__}")
 
     # Задать список регулярных выражений
-    __extract_arg_value__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                          FUNCTION_ARG_NAME "REGEXP"
+    __extract_arg_value__(ARG "REGEXP"
                           OUT_VAR "__SEARCH_REG_EXPRESSIONS__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                           DEFAULT "*.cpp" "*.h")
 
     # Задать параметр рекурсивного поиска
@@ -156,9 +155,9 @@ function(set_include_dirs_to_target)
                           "${ARGN}")
 
     # Проверить параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -184,7 +183,7 @@ function(set_include_dirs_to_target)
         __check_directories_existence__(DIRS "${__PATH_TO_DIR__}")
 
         # Собрать все поддиректории
-        __collect_subdirectories__(DIRECTORY "${__PATH_TO_DIR__}" OUT_VAR __INCLUDE_DIRS__)
+        collect_subdirs(DIRECTORY "${__PATH_TO_DIR__}" OUT_VAR "__INCLUDE_DIRS__")
 
         # Назначить директории таргету
         target_include_directories("${__TARGET__}" ${__MODIFIER__} "${__INCLUDE_DIRS__}")
@@ -231,9 +230,9 @@ function(set_interface_to_target)
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -312,8 +311,8 @@ function(set_targets_binary_dir)
                           "${ARGN}")
 
     # Проверить параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -370,8 +369,8 @@ function(__configure_target_with_build_type__)
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}")
 
     #======================== Конец парсинга параметров функции =============================
 
@@ -391,9 +390,9 @@ function(__configure_target_with_build_type__)
     if(CMAKE_BUILD_TYPE MATCHES "Release")
 
         # Определить опции сборки
-        __extract_arg_value__(FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
-                              FUNCTION_ARG_NAME "RELEASE_OPTIONS"
+        __extract_arg_value__(ARG "RELEASE_OPTIONS"
                               OUT_VAR "__COMPILE_OPTIONS__"
+                              FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
                               DEFAULT "-O2")
 
         # Задать опции сборки
@@ -405,9 +404,9 @@ function(__configure_target_with_build_type__)
     elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
         # Определить опции сборки
-        __extract_arg_value__(FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
-                              FUNCTION_ARG_NAME "DEBUG_OPTIONS"
-                              OUT_VAR "__COMPILE_OPTIONS__")
+        __extract_arg_value__(ARG "DEBUG_OPTIONS"
+                              OUT_VAR "__COMPILE_OPTIONS__"
+                              FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}")
 
         # Задать опции сборки
         target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTIONS__}")
@@ -479,10 +478,10 @@ function(add_prepared_library)
                           "${ARGN}")
 
     # Проверить обязательные параметры функции
-    __check_parameters__(PREFIX "${__PARSING_PREFIX__}"
-                         PARAMETERS "${__ONE_VALUE_ARGS__}"
-                         OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        PARAMETERS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     #======================== Конец парсинга параметров функции =============================
 

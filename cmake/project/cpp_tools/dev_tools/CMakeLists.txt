@@ -1,7 +1,7 @@
 project("BuildToolkitDevTools"
         VERSION 1.0
         LANGUAGES CXX
-        DESCRIPTION "Проект дополнительных функций"
+        DESCRIPTION "Проект средств отладки"
 )
 
 # Определить имя таргета проекта
