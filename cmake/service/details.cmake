@@ -5,14 +5,14 @@ include_guard()
 #[[
     ИСПОЛЬЗОВАНИЕ
         __check_arguments__(PREFIX <prefix>
-                            PARAMETERS <par>...
-                            [OPTIONAL_PARAMETERS <optionalParam>...]
+                            ARGS <arg>...
+                            [OPTIONAL_ARGS <optionalArg>...]
                             [EXCLUSIVE_MODIFIERS <modifier>...])
 
     АРГУМЕНТЫ
         PREFIX              - префикс парсинга аргументов проверяемой функции
-        PARAMETERS          - список обязательных параметров проверяемой функции
-        OPTIONAL_PARAMETERS - (опционально) список опциональных параметров проверяемой функции
+        ARGS                - список обязательных параметров проверяемой функции
+        OPTIONAL_ARGS       - (опционально) список опциональных параметров проверяемой функции
         EXCLUSIVE_MODIFIERS - (опционально) список взаимно исключающих модификаторов проверяемой функции
 
     ОПИСАНИЕ
@@ -23,7 +23,7 @@ include_guard()
 function(__check_arguments__)
 
     # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "__FUNCTION_PARAMETERS_CHECKING_PREFIX__")
+    set(__PARSING_PREFIX__ "__FUNCTION_ARGS_CHECKING_PREFIX__")
 
     # Если это старт функции
     if(NOT DEFINED __SELF_CHECKING__)
@@ -35,7 +35,7 @@ function(__check_arguments__)
         cmake_parse_arguments("${__PARSING_PREFIX__}"
                               ""
                               "PREFIX"
-                              "PARAMETERS;OPTIONAL_PARAMETERS;EXCLUSIVE_MODIFIERS"
+                              "ARGS;OPTIONAL_ARGS;EXCLUSIVE_MODIFIERS"
                               "${ARGN}")
 
         # Запустить самопроверку (одноуровневая рекурсия)
@@ -53,10 +53,10 @@ function(__check_arguments__)
         set(__FUNCTION_PREFIX__ "${__PARSING_PREFIX__}")
 
         # Задать обязательные параметры для проверки
-        set(__REQUIRED_PARAMETERS__ "PREFIX")
+        set(__REQUIRED_ARGS__ "PREFIX")
 
         # Задать опциональные параметры для проверки
-        set(__OPTIONAL_PARAMETERS__ "PARAMETERS;OPTIONAL_PARAMETERS;EXCLUSIVE_MODIFIERS")
+        set(__OPTIONAL_ARGS__ "ARGS;OPTIONAL_ARGS;EXCLUSIVE_MODIFIERS")
 
     else()
 
@@ -64,10 +64,10 @@ function(__check_arguments__)
         set(__FUNCTION_PREFIX__ "${${__PARSING_PREFIX__}_PREFIX}")
 
         # Взять обязательные параметры для проверки из значения аргумента
-        set(__REQUIRED_PARAMETERS__ "${${__PARSING_PREFIX__}_PARAMETERS}")
+        set(__REQUIRED_ARGS__ "${${__PARSING_PREFIX__}_ARGS}")
 
         # Взять опциональные параметры для проверки из значения аргумента
-        set(__OPTIONAL_PARAMETERS__ "${${__PARSING_PREFIX__}_OPTIONAL_PARAMETERS}")
+        set(__OPTIONAL_ARGS__ "${${__PARSING_PREFIX__}_OPTIONAL_ARGS}")
 
         # Для каждого возможного уникального флага
         foreach(__FLAG__ ${${__PARSING_PREFIX__}_EXCLUSIVE_MODIFIERS})
@@ -90,22 +90,22 @@ function(__check_arguments__)
     endif()
 
     # Для каждого параметра (обязательного и опционального)
-    foreach(__PAR__ ${__REQUIRED_PARAMETERS__} ${__OPTIONAL_PARAMETERS__})
+    foreach(__ARG__ ${__REQUIRED_ARGS__} ${__OPTIONAL_ARGS__})
 
         # Проверить, что для параметра задано значение
-        list(FIND "${__FUNCTION_PREFIX__}_KEYWORDS_MISSING_VALUES" ${__PAR__} __ARG_INDEX__)
+        list(FIND "${__FUNCTION_PREFIX__}_KEYWORDS_MISSING_VALUES" ${__ARG__} __ARG_INDEX__)
         if(NOT ${__ARG_INDEX__} EQUAL -1)
-            message(FATAL_ERROR "У параметра '${__PAR__}' должно быть задано значение")
+            message(FATAL_ERROR "У параметра '${__ARG__}' должно быть задано значение")
         endif()
 
     endforeach()
 
     # Для каждого обязательного параметра
-    foreach(__PAR__ ${__REQUIRED_PARAMETERS__})
+    foreach(__ARG__ ${__REQUIRED_ARGS__})
 
         # Проверить, что параметр определен
-        if(NOT DEFINED "${__FUNCTION_PREFIX__}_${__PAR__}")
-            message(FATAL_ERROR "Параметр '${__PAR__}' должен быть определен")
+        if(NOT DEFINED "${__FUNCTION_PREFIX__}_${__ARG__}")
+            message(FATAL_ERROR "Параметр '${__ARG__}' должен быть определен")
         endif()
 
     endforeach()
@@ -145,7 +145,7 @@ function(__check_directories_existence__)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__MULTIPLE_VALUE_ARGS__}")
+                        ARGS "${__MULTIPLE_VALUE_ARGS__}")
 
     # Для каждой директории
     foreach(__DIR__ ${${__PARSING_PREFIX__}_DIRS})
@@ -199,13 +199,10 @@ function(__extract_arg_value__)
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}" "${__OPTIONAL_ONE_VALUE_ARGS__}")
-
-    #======================== Конец парсинга параметров функции =============================
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}" "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     if (DEFINED "${__PARSING_PREFIX__}_FUNCTION_PREFIX")
 
@@ -287,10 +284,8 @@ function(__extract_modifier__)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
-
-    #======================== Конец парсинга параметров функции =============================
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     # Взять список доступных модификаторов из аргумента
     set(__AVAILABLE_MODIFIERS__ "${${__PARSING_PREFIX__}_AVAILABLE_MODIFIERS}")
@@ -372,10 +367,8 @@ function(__check_targets_existence__)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__MULTIPLE_VALUE_ARGS__}"
+                        ARGS "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"

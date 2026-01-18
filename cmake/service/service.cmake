@@ -43,8 +43,8 @@ function(collect_subdirs)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     # Взять исходную директорию из аргумента
     set(__ROOT_DIR__ "${${__PARSING_PREFIX__}_DIRECTORY}")
@@ -158,8 +158,6 @@ function(add_subdirs)
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"

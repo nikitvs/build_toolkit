@@ -19,8 +19,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/../service/service.cmake)
 
 function(add_module)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__ADDING_MODULE_PREFIX__")
 
@@ -37,10 +35,8 @@ function(add_module)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}")
-
-    #======================== Конец парсинга параметров функции =============================
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
     # Вычислить абсолютный путь к модулю
     get_filename_component(__ABS_PATH_TO_MODULE__ "${${__PARSING_PREFIX__}_MODULE_PATH}" ABSOLUTE)
@@ -122,11 +118,9 @@ function(link_module_libraries)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -218,8 +212,8 @@ function(link_qt_libraries)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 
     # Взять целевой таргет из аргумента

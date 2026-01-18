@@ -28,8 +28,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/../service/service.cmake)
 
 function(set_sources_to_target)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__SOURCES_ASSIGNMENT_PREFIX__")
 
@@ -48,11 +46,9 @@ function(set_sources_to_target)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -137,8 +133,6 @@ endfunction()
 
 function(set_include_dirs_to_target)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__INCLUDE_DIRS_ASSIGNMENT_PREFIX__")
 
@@ -156,10 +150,8 @@ function(set_include_dirs_to_target)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
@@ -211,8 +203,6 @@ endfunction()
 
 function(set_interface_to_target)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__INTERFACE_DIRS_ASSIGNMENT_PREFIX__")
 
@@ -231,10 +221,8 @@ function(set_interface_to_target)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
@@ -294,8 +282,6 @@ endfunction()
 
 function(set_targets_binary_dir)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__TARGETS_BINARY_DIR_ASSIGNMENT_PREFIX__")
 
@@ -312,9 +298,7 @@ function(set_targets_binary_dir)
 
     # Проверить параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
-
-    #======================== Конец парсинга параметров функции =============================
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
 
     # Взять директорию сборки из аргумента
     set(__BINARY_DIR__ "${${__PARSING_PREFIX__}_BINARY_DIR}")
@@ -353,8 +337,6 @@ endfunction()
 
 function(__configure_target_with_build_type__)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__TYPED_TARGET_CONFIGURING_PREFIX__")
 
@@ -370,9 +352,7 @@ function(__configure_target_with_build_type__)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}")
-
-    #======================== Конец парсинга параметров функции =============================
+                        ARGS "${__ONE_VALUE_ARGS__}")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -458,8 +438,6 @@ endfunction()
 
 function(add_prepared_library)
 
-    #============================ Парсинг параметров функции ================================
-
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
 
@@ -479,11 +457,9 @@ function(add_prepared_library)
 
     # Проверить обязательные параметры функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        PARAMETERS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_PARAMETERS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
-
-    #======================== Конец парсинга параметров функции =============================
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
