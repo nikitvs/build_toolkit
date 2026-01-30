@@ -29,19 +29,19 @@ function(collect_subdirs)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__SUBDIRECTORIES_COLLECTING_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__FLAGS__ "NO_ROOT")
     set(__ONE_VALUE_ARGS__ "DIRECTORY" "OUT_VAR")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "MAX_DEPTH")
 
-    # Парсить параметры функции
+    # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__FLAGS__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
@@ -145,17 +145,17 @@ function(add_subdirs)
 
     set(__PARSING_PREFIX__ "__ADDING_SUBDIRECTORIES_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__EXCLUSIVE_MODIFIERS__ "FATAL_ERROR" "WARNING")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__}"
                           ""
                           ""
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
 

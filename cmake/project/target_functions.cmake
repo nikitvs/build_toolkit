@@ -31,20 +31,20 @@ function(set_sources_to_target)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__SOURCES_ASSIGNMENT_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "NO_RECURSION")
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCE_DIRS" "REGEXP" "EXCLUDE_REGEXP")
 
-    # Парсить параметры функции
+    # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__OPTIONS__};${__EXCLUSIVE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
@@ -136,19 +136,19 @@ function(set_include_dirs_to_target)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__INCLUDE_DIRS_ASSIGNMENT_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__MULTIPLE_VALUE_ARGS__ "INCLUDE_DIRS")
 
-    # Парсить параметры функции
+    # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
@@ -206,20 +206,20 @@ function(set_interface_to_target)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__INTERFACE_DIRS_ASSIGNMENT_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "NO_RECURSION")
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__MULTIPLE_VALUE_ARGS__ "INTERFACE_DIRS")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__OPTIONS__};${__EXCLUSIVE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
@@ -285,18 +285,18 @@ function(set_targets_binary_dir)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__TARGETS_BINARY_DIR_ASSIGNMENT_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__ONE_VALUE_ARGS__ BINARY_DIR)
     set(__MULTIPLE_VALUE_ARGS__ TARGETS)
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           "${__ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
 
@@ -332,7 +332,7 @@ endfunction()
     TARGET          - целевой таргет
 
 ОПИСАНИЕ
-    Настроить параметры таргета в зависимости от типа сборки
+    Настроить аргументы таргета в зависимости от типа сборки
 #]]
 
 function(__configure_target_with_build_type__)
@@ -340,17 +340,17 @@ function(__configure_target_with_build_type__)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__TYPED_TARGET_CONFIGURING_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__ONE_VALUE_ARGS__ "TARGET" "FUNCTION_PREFIX")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           "${__ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}")
 
@@ -441,21 +441,21 @@ function(add_prepared_library)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "EXCLUDE_FROM_ALL")
     set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__};${__OPTIONS__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
@@ -476,7 +476,64 @@ function(add_prepared_library)
 
     add_library("${__TARGET__}" ${__MODIFIER__} ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
 
-    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                                         TARGET "${__TARGET__}")
+    # Настроить таргет
+    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}" TARGET "${__TARGET__}")
+
+endfunction()
+
+#[[
+ИСПОЛЬЗОВАНИЕ
+    add_prepared_executable(TARGET <target>
+                            SOURCES <source>...
+                            [EXCLUDE_FROM_ALL]
+                            [RELEASE_OPTIONS <options>]
+                            [DEBUG_OPTIONS <options>])
+
+АРГУМЕНТЫ
+    TARGET                          - целевой таргет
+    SOURCES                         - список исходных текстов
+    EXCLUDE_FROM_ALL                - исключить из таргета 'all'
+    RELEASE_OPTIONS                 - (опционально) опции сборки в релизе
+    DEBUG_OPTIONS                   - (опционально) опции сборки в отладке
+
+ОПИСАНИЕ
+    Создать таргет исполняемого файла
+#]]
+
+function(add_prepared_executable)
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
+
+    # Задать конфигурацию аргументов парсинга
+    set(__OPTIONS__ "EXCLUDE_FROM_ALL")
+    set(__ONE_VALUE_ARGS__ "TARGET")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
+    set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
+
+    # Парсить аргументы
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          "${__OPTIONS__}"
+                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
+                          "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
+                          "${ARGN}")
+
+    # Проверить аргументы функции
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        ARGS "${__ONE_VALUE_ARGS__}"
+                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}")
+
+    # Извлечь модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "EXCLUDE_FROM_ALL"
+                         OUT_VAR "__EXCLUDE__")
+
+    # Взять целевой таргет из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+
+    add_executable("${__TARGET__}" ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
+
+    # Настроить таргет
+    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}" TARGET "${__TARGET__}")
 
 endfunction()

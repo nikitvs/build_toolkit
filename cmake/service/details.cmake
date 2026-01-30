@@ -11,13 +11,13 @@ include_guard()
 
     АРГУМЕНТЫ
         PREFIX              - префикс парсинга аргументов проверяемой функции
-        ARGS                - список обязательных параметров проверяемой функции
-        OPTIONAL_ARGS       - (опционально) список опциональных параметров проверяемой функции
+        ARGS                - список обязательных аргументов проверяемой функции
+        OPTIONAL_ARGS       - (опционально) список опциональных аргументов проверяемой функции
         EXCLUSIVE_MODIFIERS - (опционально) список взаимно исключающих модификаторов проверяемой функции
 
     ОПИСАНИЕ
         Функция предназначена для проверки входных аргументов кастомных CMake функций
-        Данная функция должна вызываться после парсинга параметров проверяемой функции
+        Данная функция должна вызываться после парсинга аргументов проверяемой функции
 #]]
 
 function(__check_arguments__)
@@ -52,10 +52,10 @@ function(__check_arguments__)
         # Задать префикс вызывающей функции как префикс парсинга
         set(__FUNCTION_PREFIX__ "${__PARSING_PREFIX__}")
 
-        # Задать обязательные параметры для проверки
+        # Задать обязательные аргументы для проверки
         set(__REQUIRED_ARGS__ "PREFIX")
 
-        # Задать опциональные параметры для проверки
+        # Задать опциональные аргументы для проверки
         set(__OPTIONAL_ARGS__ "ARGS;OPTIONAL_ARGS;EXCLUSIVE_MODIFIERS")
 
     else()
@@ -63,10 +63,10 @@ function(__check_arguments__)
         # Взять префикс вызывающей функции из значения аргумента
         set(__FUNCTION_PREFIX__ "${${__PARSING_PREFIX__}_PREFIX}")
 
-        # Взять обязательные параметры для проверки из значения аргумента
+        # Взять обязательные аргументы для проверки из значения аргумента
         set(__REQUIRED_ARGS__ "${${__PARSING_PREFIX__}_ARGS}")
 
-        # Взять опциональные параметры для проверки из значения аргумента
+        # Взять опциональные аргументы для проверки из значения аргумента
         set(__OPTIONAL_ARGS__ "${${__PARSING_PREFIX__}_OPTIONAL_ARGS}")
 
         # Для каждого возможного уникального флага
@@ -89,30 +89,30 @@ function(__check_arguments__)
 
     endif()
 
-    # Для каждого параметра (обязательного и опционального)
+    # Для каждого аргумента (обязательного и опционального)
     foreach(__ARG__ ${__REQUIRED_ARGS__} ${__OPTIONAL_ARGS__})
 
-        # Проверить, что для параметра задано значение
+        # Проверить, что для аргумента задано значение
         list(FIND "${__FUNCTION_PREFIX__}_KEYWORDS_MISSING_VALUES" ${__ARG__} __ARG_INDEX__)
         if(NOT ${__ARG_INDEX__} EQUAL -1)
-            message(FATAL_ERROR "У параметра '${__ARG__}' должно быть задано значение")
+            message(FATAL_ERROR "У аргумента '${__ARG__}' должно быть задано значение")
         endif()
 
     endforeach()
 
-    # Для каждого обязательного параметра
+    # Для каждого обязательного аргумента
     foreach(__ARG__ ${__REQUIRED_ARGS__})
 
-        # Проверить, что параметр определен
+        # Проверить, что аргумент определен
         if(NOT DEFINED "${__FUNCTION_PREFIX__}_${__ARG__}")
-            message(FATAL_ERROR "Параметр '${__ARG__}' должен быть определен")
+            message(FATAL_ERROR "Аргумент '${__ARG__}' должен быть определен")
         endif()
 
     endforeach()
 
-    # Проверить наличие лишних параметров
+    # Проверить наличие лишних аргументов
     if(DEFINED "${__FUNCTION_PREFIX__}_UNPARSED_ARGUMENTS")
-        message(FATAL_ERROR "Присутствуют лишние параметры: ${${__FUNCTION_PREFIX__}_UNPARSED_ARGUMENTS}")
+        message(FATAL_ERROR "Присутствуют лишние аргументы: ${${__FUNCTION_PREFIX__}_UNPARSED_ARGUMENTS}")
     endif()
 
 endfunction()
@@ -133,17 +133,17 @@ function(__check_directories_existence__)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__DIRECTORIES_EXISTENCE_CHECKING_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__MULTIPLE_VALUE_ARGS__ "DIRS")
 
-    # Парсить параметры функции
+    # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           ""
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__MULTIPLE_VALUE_ARGS__}")
 
@@ -176,10 +176,9 @@ endfunction()
         DEFAULT             - (опционально) модификатор по умолчанию
 
     ОПИСАНИЕ
-        Извлечь использованный при вызове фукции модификатор
-        Если модификатор не выбран, вернуть значение по умолчанию
-        Результат записывается в выходную переменную
-        Если результата нет, то выходная переменная не инициализируется
+        Извлечь значение аргумента и записать его в выходную переменную
+        Если аргумент не задан, то записать значение по умолчанию
+        Если значение по умалчанию не задано, то выходная переменная не инициализируется
 #]]
 
 function(__extract_arg_value__)
@@ -187,19 +186,19 @@ function(__extract_arg_value__)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__ARG_VALUE_EXTRACTION_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__ONE_VALUE_ARGS__ "ARG" "OUT_VAR")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "FUNCTION_PREFIX")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "DEFAULT")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}" "${__OPTIONAL_ONE_VALUE_ARGS__}")
@@ -259,9 +258,9 @@ endfunction()
         DEFAULT             - (опционально) модификатор по умолчанию
 
     ОПИСАНИЕ
-        Извлечь использованный при вызове фукции модификатор
-        Если модификатор не выбран, вернуть значение по умолчанию
-        Результат записывается в указанную переменную
+        Извлечь использованный при вызове фукции модификатор и записать его в выходную переменную
+        Если модификатор не выбран, то записать значение по умолчанию
+        Если значение по умалчанию не задано, то выходная переменная не инициализируется
 #]]
 
 function(__extract_modifier__)
@@ -269,12 +268,12 @@ function(__extract_modifier__)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__MODIFIER_EXTRACTION_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX" "OUT_VAR")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "DEFAULT")
     set(__MULTIPLE_VALUE_ARGS__ "AVAILABLE_MODIFIERS")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
@@ -282,7 +281,7 @@ function(__extract_modifier__)
                           "${ARGN}")
 
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
@@ -354,18 +353,18 @@ function(__check_targets_existence__)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__TARGET_EXISTENCE_CHECKING_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__EXCLUSIVE_MODIFIERS__ "FATAL_ERROR" "WARNING")
     set(__MULTIPLE_VALUE_ARGS__ "TARGETS")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__}"
                           ""
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__MULTIPLE_VALUE_ARGS__}"
                         EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")

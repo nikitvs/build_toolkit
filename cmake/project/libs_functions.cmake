@@ -22,18 +22,18 @@ function(add_module)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__ADDING_MODULE_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__ONE_VALUE_ARGS__ "MODULE_PATH")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "MODULE_DESTINATION_PATH")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           ""
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}")
@@ -103,20 +103,20 @@ function(link_module_libraries)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__LINKING_MODULE_LIBRARIES_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET" "MODULE_PATH")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "MODULE_DESTINATION_PATH")
     set(__MULTIPLE_VALUE_ARGS__ "MODULE_LIBS")
 
-    # Парсить параметры
+    # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить обязательные параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}"
@@ -197,20 +197,20 @@ function(link_qt_libraries)
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__QT_LIBS_LINKING_PREFIX__")
 
-    # Задать конфигурацию параметров парсинга
+    # Задать конфигурацию аргументов парсинга
     set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__MULTIPLE_VALUE_ARGS__ "QT_LIBS")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "VERSION")
 
-    # Парсить параметры функции
+    # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
                           "${__EXCLUSIVE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
 
-    # Проверить параметры функции
+    # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}"
