@@ -398,13 +398,14 @@ function(__configure_target_with_build_type__)
             MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/dev_tools"
             MODULE_LIBS "BuildToolkitDevTools")
 
-        # TODO
-#        # Подключить модуль диагностики
-#        include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../Diagnostics/DiagnosticsCode.cmake)
+        # Подключить модуль диагностики
+        include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/diagnostics_functions.cmake)
 
-#        # Использовать санитайзеры
-#        use_sanitizers(TARGET "${__TARGET__}")
+        # TODO не работает на Windows
+        # Использовать санитайзеры
+#        use_sanitizers(PRIVATE TARGET "${__TARGET__}")
 
+# TODO
 #        # Включить все предупреждения
 #        all_compilation_warn_on(TARGET "${__TARGET__}")
 
