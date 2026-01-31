@@ -401,14 +401,10 @@ function(__configure_target_with_build_type__)
         # Подключить модуль диагностики
         include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/diagnostics_functions.cmake)
 
-        # TODO не работает на Windows
         # Использовать санитайзеры
-#        use_sanitizers(PRIVATE TARGET "${__TARGET__}")
+        use_diagnostics(PRIVATE TARGET "${__TARGET__}")
 
 # TODO
-#        # Включить все предупреждения
-#        all_compilation_warn_on(TARGET "${__TARGET__}")
-
 #        # Использовать анализатор кода
 #        use_pvs(TARGET "${__TARGET__}")
 
