@@ -6,14 +6,14 @@ include_guard()
     ИСПОЛЬЗОВАНИЕ
         __check_arguments__(PREFIX <prefix>
                             ARGS <arg>...
-                            [OPTIONAL_ARGS <optionalArg>...]
-                            [EXCLUSIVE_MODIFIERS <modifier>...])
+                            [OPTIONAL_ARGS <arg>...]
+                            [INCOMPATIBLE_ARGS <arg>...])
 
     АРГУМЕНТЫ
         PREFIX              - префикс парсинга аргументов проверяемой функции
         ARGS                - список обязательных аргументов проверяемой функции
         OPTIONAL_ARGS       - (опционально) список опциональных аргументов проверяемой функции
-        EXCLUSIVE_MODIFIERS - (опционально) список взаимно исключающих модификаторов проверяемой функции
+        INCOMPATIBLE_ARGS   - (опционально) список взаимно исключающих аргументов проверяемой функции
 
     ОПИСАНИЕ
         Функция предназначена для проверки входных аргументов кастомных CMake функций
@@ -35,7 +35,7 @@ function(__check_arguments__)
         cmake_parse_arguments("${__PARSING_PREFIX__}"
                               ""
                               "PREFIX"
-                              "ARGS;OPTIONAL_ARGS;EXCLUSIVE_MODIFIERS"
+                              "ARGS;OPTIONAL_ARGS;INCOMPATIBLE_ARGS"
                               "${ARGN}")
 
         # Запустить самопроверку (одноуровневая рекурсия)
@@ -56,7 +56,7 @@ function(__check_arguments__)
         set(__REQUIRED_ARGS__ "PREFIX")
 
         # Задать опциональные аргументы для проверки
-        set(__OPTIONAL_ARGS__ "ARGS;OPTIONAL_ARGS;EXCLUSIVE_MODIFIERS")
+        set(__OPTIONAL_ARGS__ "ARGS;OPTIONAL_ARGS;INCOMPATIBLE_ARGS")
 
     else()
 
@@ -70,21 +70,21 @@ function(__check_arguments__)
         set(__OPTIONAL_ARGS__ "${${__PARSING_PREFIX__}_OPTIONAL_ARGS}")
 
         # Для каждого возможного уникального флага
-        foreach(__FLAG__ ${${__PARSING_PREFIX__}_EXCLUSIVE_MODIFIERS})
+        foreach(__ARG__ ${${__PARSING_PREFIX__}_INCOMPATIBLE_ARGS})
 
             # Если флаг активен -> запомнить его
-            if(${__FUNCTION_PREFIX__}_${__FLAG__})
-                list(APPEND __FLAGS_NAMES__ "${__FLAG__}")
+            if(${__FUNCTION_PREFIX__}_${__ARG__})
+                list(APPEND __INC_ARGS_NAMES__ "${__ARG__}")
             endif()
 
         endforeach()
 
         # Посчитать количество активных флагов
-        list(LENGTH __FLAGS_NAMES__ __ACTIVE_FLAGS_COUNT__)
+        list(LENGTH __INC_ARGS_NAMES__ __ACTIVE_INC_ARGS_COUNT__)
 
         # Проверить, что активно не более одного флага
-        if(${__ACTIVE_FLAGS_COUNT__} GREATER 1)
-            message(FATAL_ERROR "Флаги не могут быть использованны одновременно: ${__FLAGS_NAMES__}")
+        if(${__ACTIVE_INC_ARGS_COUNT__} GREATER 1)
+            message(FATAL_ERROR "Следующие аргументы не могут быть использованны одновременно: ${__INC_ARGS_NAMES__}")
         endif()
 
     endif()
@@ -354,12 +354,12 @@ function(__check_targets_existence__)
     set(__PARSING_PREFIX__ "__TARGET_EXISTENCE_CHECKING_PREFIX__")
 
     # Задать конфигурацию аргументов парсинга
-    set(__EXCLUSIVE_MODIFIERS__ "FATAL_ERROR" "WARNING")
+    set(__INCOMPATIBLE_MODIFIERS__ "FATAL_ERROR" "WARNING")
     set(__MULTIPLE_VALUE_ARGS__ "TARGETS")
 
     # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__EXCLUSIVE_MODIFIERS__}"
+                          "${__INCOMPATIBLE_MODIFIERS__}"
                           ""
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -367,11 +367,11 @@ function(__check_targets_existence__)
     # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__MULTIPLE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "FATAL_ERROR")
 

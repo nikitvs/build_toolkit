@@ -146,22 +146,22 @@ function(add_subdirs)
     set(__PARSING_PREFIX__ "__ADDING_SUBDIRECTORIES_PREFIX__")
 
     # Задать конфигурацию аргументов парсинга
-    set(__EXCLUSIVE_MODIFIERS__ "FATAL_ERROR" "WARNING")
+    set(__INCOMPATIBLE_MODIFIERS__ "FATAL_ERROR" "WARNING")
 
     # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__EXCLUSIVE_MODIFIERS__}"
+                          "${__INCOMPATIBLE_MODIFIERS__}"
                           ""
                           ""
                           "${ARGN}")
 
     # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Извлечь использованный модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "WARNING")
 

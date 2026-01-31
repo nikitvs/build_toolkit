@@ -33,13 +33,13 @@ function(set_sources_to_target)
 
     # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "NO_RECURSION")
-    set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
+    set(__INCOMPATIBLE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCE_DIRS" "REGEXP" "EXCLUDE_REGEXP")
 
     # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__OPTIONS__};${__EXCLUSIVE_MODIFIERS__}"
+                          "${__OPTIONS__};${__INCOMPATIBLE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -48,7 +48,7 @@ function(set_sources_to_target)
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -105,7 +105,7 @@ function(set_sources_to_target)
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "PRIVATE")
 
@@ -137,13 +137,13 @@ function(set_include_dirs_to_target)
     set(__PARSING_PREFIX__ "__INCLUDE_DIRS_ASSIGNMENT_PREFIX__")
 
     # Задать конфигурацию аргументов парсинга
-    set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
+    set(__INCOMPATIBLE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__MULTIPLE_VALUE_ARGS__ "INCLUDE_DIRS")
 
     # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__EXCLUSIVE_MODIFIERS__}"
+                          "${__INCOMPATIBLE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -151,11 +151,11 @@ function(set_include_dirs_to_target)
     # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "PUBLIC")
 
@@ -208,13 +208,13 @@ function(set_interface_to_target)
 
     # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "NO_RECURSION")
-    set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
+    set(__INCOMPATIBLE_MODIFIERS__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__MULTIPLE_VALUE_ARGS__ "INTERFACE_DIRS")
 
     # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__OPTIONS__};${__EXCLUSIVE_MODIFIERS__}"
+                          "${__OPTIONS__};${__INCOMPATIBLE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           "${__MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -222,11 +222,11 @@ function(set_interface_to_target)
     # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "PUBLIC")
 
@@ -440,14 +440,14 @@ function(add_prepared_library)
 
     # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "EXCLUDE_FROM_ALL")
-    set(__EXCLUSIVE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
+    set(__INCOMPATIBLE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
     # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__EXCLUSIVE_MODIFIERS__};${__OPTIONS__}"
+                          "${__INCOMPATIBLE_MODIFIERS__};${__OPTIONS__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -456,11 +456,11 @@ function(add_prepared_library)
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__")
 
     # Извлечь модификатор

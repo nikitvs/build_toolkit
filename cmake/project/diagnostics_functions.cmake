@@ -28,11 +28,11 @@ function(use_diagnostics)
     # Задать конфигурацию аргументов парсинга
     set(__OPTIONS__ "NO_SANITIZERS")
     set(__ONE_VALUE_ARGS__ "TARGET")
-    set(__EXCLUSIVE_MODIFIERS__ "PUBLIC" "PRIVATE")
+    set(__INCOMPATIBLE_MODIFIERS__ "PUBLIC" "PRIVATE")
 
     # Парсить аргументы функции
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__OPTIONS__};${__EXCLUSIVE_MODIFIERS__}"
+                          "${__OPTIONS__};${__INCOMPATIBLE_MODIFIERS__}"
                           "${__ONE_VALUE_ARGS__}"
                           ""
                           "${ARGN}")
@@ -40,7 +40,7 @@ function(use_diagnostics)
     # Проверить аргументы функции
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
-                        EXCLUSIVE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -101,7 +101,7 @@ function(use_diagnostics)
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__EXCLUSIVE_MODIFIERS__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
                          DEFAULT "PRIVATE")
 
