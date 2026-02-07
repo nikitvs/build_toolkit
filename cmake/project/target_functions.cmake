@@ -157,7 +157,7 @@ function(set_include_dirs_to_target)
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
-                         DEFAULT "PUBLIC")
+                         DEFAULT "PRIVATE")
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
@@ -258,7 +258,7 @@ function(set_interface_to_target)
         foreach(__SUBDIR__ ${__DIR__} ${__SEARCH_RESULT__})
 
             if (IS_DIRECTORY "${__SUBDIR__}")
-                target_include_directories("${__TARGET__}" ${__MODIFIER__} "${__SUBDIR__}")
+                set_include_dirs_to_target(${__MODIFIER__} TARGET "${__TARGET__}" INCLUDE_DIRS "${__SUBDIR__}")
             endif()
 
         endforeach()
@@ -330,7 +330,7 @@ endfunction()
                         [STATIC | SHARED | MODULE | OBJECT]
                         [DEBUG_OPTIONS <options>]
                         [RELEASE_OPTIONS <options>]
-                        [PUBLIC | PRIVATE]
+                        [PUBLIC | PRIVATE | INTERFACE]
                         [NO_SANITIZERS]
                         [EXCLUDE_FROM_ALL])
 
@@ -341,7 +341,7 @@ endfunction()
     STATIC, SHARED, MODULE, OBJECT  - (опционально) модификаторы, определяющие тип библиотеки
     DEBUG_OPTIONS                   - (опционально) опции компиляции для отладки
     RELEASE_OPTIONS                 - (опционально) опции компиляции для релиза
-    PUBLIC, PRIVATE                 - (опционально) модификаторы распространения опций компиляции на внешние таргеты
+    PUBLIC, PRIVATE, INTERFACE      - (опционально) модификаторы распространения опций компиляции на внешние таргеты
     NO_SANITIZERS                   - (опционально) флаг отключения санитайзеров
     EXCLUDE_FROM_ALL                - (опционально) исключить из таргета 'all'
 
@@ -358,7 +358,7 @@ function(add_prepared_target)
     set(__OPTIONS__ "NO_SANITIZERS" "EXCLUDE_FROM_ALL")
     set(__INCOMPATIBLE_MODIFIERS_TARGET_TYPE__ "EXECUTABLE" "LIBRARY")
     set(__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__ "STATIC" "SHARED" "MODULE" "OBJECT")
-    set(__INCOMPATIBLE_MODIFIERS_VISIBILITY__ "PUBLIC" "PRIVATE")
+    set(__INCOMPATIBLE_MODIFIERS_VISIBILITY__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
@@ -428,7 +428,7 @@ function(add_prepared_target)
 
     # Подключить библиотеку дополнительных функций
     link_module_libraries(
-        ${__MODIFIER__}
+        PUBLIC
         TARGET "${__TARGET__}"
         MODULE_PATH "${__BUILD_TOOLKIT_CPP_TOOLS_DIR__}/lib_additional"
         MODULE_LIBS "BuildToolkitAdditional")

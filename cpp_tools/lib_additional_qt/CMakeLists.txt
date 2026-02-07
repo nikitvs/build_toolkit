@@ -1,3 +1,5 @@
+include_guard(GLOBAL)
+
 project("BuildToolkitAdditionalQt"
         VERSION 1.0
         LANGUAGES CXX

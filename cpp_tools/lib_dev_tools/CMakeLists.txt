@@ -1,3 +1,5 @@
+include_guard(GLOBAL)
+
 project("BuildToolkitDevTools"
         VERSION 1.0
         LANGUAGES CXX

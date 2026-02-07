@@ -144,7 +144,7 @@ function(link_module_libraries)
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
                          OUT_VAR "__MODIFIER__"
-                         DEFAULT "PUBLIC")
+                         DEFAULT "PRIVATE")
 
     __check_targets_existence__(TARGETS "${${__PARSING_PREFIX__}_MODULE_LIBS}")
 
@@ -187,7 +187,6 @@ endfunction()
 function(link_qt_libraries)
 
     # TODO проверить, что поиск пакетов внутри функции работает нормально
-    # TODO потом перенести в общий .cmake файл
     # Найти пакеты Qt
     find_package(QT NAMES Qt6 Qt5 REQUIRED)
 
@@ -230,23 +229,21 @@ function(link_qt_libraries)
                           FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                           DEFAULT "${QT_VERSION_MAJOR}")
 
-    # Извлечь модификатор
-    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
-                         OUT_VAR "__MODIFIER__"
-                         DEFAULT "PUBLIC")
-
     # Найти библиотеки Qt
     find_package("Qt${__VERSION__}" COMPONENTS "${${__PARSING_PREFIX__}_QT_LIBS}" REQUIRED)
 
     # Включить MOC для таргета
     # NOTE атрибуты наследуются хреново, поэтому следует вызывать текущую функцию (хотя бы для подключения Core)
     # для всех таргетов, наследующих таргетам, использующим Qt
-    set_target_properties("${__TARGET__}" PROPERTIES
-                          AUTOUIC ON
-                          AUTOMOC ON
-                          AUTORCC ON
-    )
+    set_target_properties("${__TARGET__}" PROPERTIES AUTOUIC ON
+                                                     AUTOMOC ON
+                                                     AUTORCC ON)
+
+    # Извлечь модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PRIVATE")
 
     # Подключить библиотеки Qt
     foreach(__LIB__ ${${__PARSING_PREFIX__}_QT_LIBS})
