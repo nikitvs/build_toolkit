@@ -12,7 +12,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../service/service.cmake)
 АРГУМЕНТЫ
     TARGET          - целевой таргет
     PUBLIC, PRIVATE - (опционально) модификаторы распространения опций компиляции на внешние таргеты
-    NO_SANITIZERS   - (опционально) флаг отмены включения санитайзеров
+    NO_SANITIZERS   - (опционально) флаг отключения санитайзеров
 
 ОПИСАНИЕ
     Включить для таргета дополнительные опции компиляции с проверками и санитайзеры (ASan, UbSan)
@@ -61,11 +61,8 @@ function(use_diagnostics)
         # Включить санитайзеры
         if(NOT ${__PARSING_PREFIX__}_NO_SANITIZERS)
 
-            # Санитайзеры GCC не работают на Windows :(
-            if(NOT WIN32)
-                list(APPEND __SANITIZE_COMPILE_OPTIONS__ "-fsanitize=address,undefined" "-ggdb3" "-fno-omit-frame-pointer")
-                list(APPEND __SANITIZE_LINK_OPTIONS__ "-fsanitize=address,undefined")
-            endif()
+            list(APPEND __SANITIZE_COMPILE_OPTIONS__ "-fsanitize=address,undefined" "-ggdb3" "-fno-omit-frame-pointer")
+            list(APPEND __SANITIZE_LINK_OPTIONS__ "-fsanitize=address,undefined")
 
         endif()
 

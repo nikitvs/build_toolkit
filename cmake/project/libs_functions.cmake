@@ -257,7 +257,7 @@ function(link_qt_libraries)
     link_module_libraries(
         ${__MODIFIER__}
         TARGET "${__TARGET__}"
-        MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional_qt"
+        MODULE_PATH "${__BUILD_TOOLKIT_CPP_TOOLS_DIR__}/lib_additional_qt"
         MODULE_LIBS "BuildToolkitAdditionalQt")
 
 endfunction()

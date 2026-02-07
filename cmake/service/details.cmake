@@ -69,22 +69,22 @@ function(__check_arguments__)
         # Взять опциональные аргументы для проверки из значения аргумента
         set(__OPTIONAL_ARGS__ "${${__PARSING_PREFIX__}_OPTIONAL_ARGS}")
 
-        # Для каждого возможного уникального флага
+        # Для каждого возможного уникального аргумента
         foreach(__ARG__ ${${__PARSING_PREFIX__}_INCOMPATIBLE_ARGS})
 
-            # Если флаг активен -> запомнить его
+            # Если аргумент активен -> запомнить его
             if(${__FUNCTION_PREFIX__}_${__ARG__})
                 list(APPEND __INC_ARGS_NAMES__ "${__ARG__}")
             endif()
 
         endforeach()
 
-        # Посчитать количество активных флагов
+        # Посчитать количество активных аргументов
         list(LENGTH __INC_ARGS_NAMES__ __ACTIVE_INC_ARGS_COUNT__)
 
-        # Проверить, что активно не более одного флага
+        # Проверить, что активно не более одного аргумента
         if(${__ACTIVE_INC_ARGS_COUNT__} GREATER 1)
-            message(FATAL_ERROR "Следующие аргументы не могут быть использованны одновременно: ${__INC_ARGS_NAMES__}")
+            message(FATAL_ERROR "Следующие аргументы не могут быть использованны одновременно: '${__INC_ARGS_NAMES__}'")
         endif()
 
     endif()
@@ -104,7 +104,7 @@ function(__check_arguments__)
     foreach(__ARG__ ${__REQUIRED_ARGS__})
 
         # Проверить, что аргумент определен
-        if(NOT DEFINED "${__FUNCTION_PREFIX__}_${__ARG__}")
+        if(NOT ${__FUNCTION_PREFIX__}_${__ARG__})
             message(FATAL_ERROR "Аргумент '${__ARG__}' должен быть определен")
         endif()
 
@@ -172,7 +172,7 @@ endfunction()
     АРГУМЕНТЫ
         ARG                 - имя аргумента функции для извлечения значения
         OUT_VAR             - имя переменной, куда запишется результат
-        FUNCTION_PREFIX     - (опционально) префикс функции, для которой вызвано извлечение модификатора
+        FUNCTION_PREFIX     - (опционально) префикс функции
         DEFAULT             - (опционально) модификатор по умолчанию
 
     ОПИСАНИЕ
@@ -203,7 +203,7 @@ function(__extract_arg_value__)
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}" "${__OPTIONAL_ONE_VALUE_ARGS__}")
 
-    if (DEFINED "${__PARSING_PREFIX__}_FUNCTION_PREFIX")
+    if (DEFINED "${__PARSING_PREFIX__}_FUNCTION_PREFIX" AND NOT "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}" STREQUAL "")
 
         set(__FULL_PREFIX__ "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}_")
 
@@ -384,5 +384,89 @@ function(__check_targets_existence__)
         endif()
 
     endforeach()
+
+endfunction()
+
+#[[
+    ИСПОЛЬЗОВАНИЕ
+        __check_incompatible_groups_intersections__(GROUP_1 <group>
+                                                    GROUP_2 <group>
+                                                    [FUNCTION_PREFIX <prefix>])
+
+    АРГУМЕНТЫ
+        GROUP_1         - первая группа аргументов
+        GROUP_2         - вторая группа аргументов
+        FUNCTION_PREFIX - (опционально) префикс функции
+
+    ОПИСАНИЕ
+        Проверить отсутствие пересечений в использовании несовместимых аргументов
+#]]
+
+function(__check_incompatible_groups_intersections__)
+
+    # Задать префикс парсинга
+    set(__PARSING_PREFIX__ "__INCOMPATIBLE_GROUPS_INTERSECTIONS_CHECKING_PREFIX__")
+
+    # Задать конфигурацию аргументов парсинга
+    set(__ONE_VALUE_ARGS__ "FUNCTION_PREFIX")
+    set(__MULTIPLE_VALUE_ARGS__ "GROUP_1" "GROUP_2")
+
+    # Парсить аргументы
+    cmake_parse_arguments("${__PARSING_PREFIX__}"
+                          ""
+                          "${__ONE_VALUE_ARGS__}"
+                          "${__MULTIPLE_VALUE_ARGS__}"
+                          "${ARGN}")
+
+
+    # Проверить аргументы функции
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}")
+
+    # Извлечь группу
+    __extract_arg_value__(ARG "GROUP_1"
+                          OUT_VAR "__GROUP_1__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}")
+
+    # Извлечь группу
+    __extract_arg_value__(ARG "GROUP_2"
+                          OUT_VAR "__GROUP_2__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}")
+
+    # Определить полный префикс аргументов
+    if (DEFINED "${__PARSING_PREFIX__}_FUNCTION_PREFIX" AND NOT "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}" STREQUAL "")
+        set(__FULL_PREFIX__ "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}_")
+    endif()
+
+    foreach(__ARG__ ${__GROUP_1__})
+
+        # Не допускать общие элементы в обоих списках
+        list(FIND __GROUP_2__ "${__ARG__}" __INDEX__)
+        if(NOT __INDEX__ EQUAL -1)
+            message(FATAL_ERROR "Аргумент не может быть несовместим сам с собой: '${__ARG__}'")
+        endif()
+
+        # Если аргумент активен -> запомнить его
+        if(${__FULL_PREFIX__}${__ARG__})
+            list(APPEND __ACTIVE_ARGS_NAMES_1__ "${__ARG__}")
+        endif()
+
+    endforeach()
+
+    foreach(__ARG__ ${__GROUP_2__})
+        # Если аргумент активен -> запомнить его
+        if(${__FULL_PREFIX__}${__ARG__})
+            list(APPEND __ACTIVE_ARGS_NAMES_2__ "${__ARG__}")
+        endif()
+    endforeach()
+
+    # Посчитать количество активных аргументов
+    list(LENGTH __ACTIVE_ARGS_NAMES_1__ __ACTIVE_ARGS_COUNT_1__)
+    list(LENGTH __ACTIVE_ARGS_NAMES_2__ __ACTIVE_ARGS_COUNT_2__)
+
+    # Проверить, что активна может быть только одна группа
+    if((${__ACTIVE_ARGS_COUNT_1__} GREATER 0) AND (${__ACTIVE_ARGS_COUNT_2__} GREATER 0))
+        message(FATAL_ERROR "Следующие аргументы не могут быть использованны одновременно: '${__ACTIVE_ARGS_NAMES_1__}' и '${__ACTIVE_ARGS_NAMES_2__}'")
+    endif()
 
 endfunction()

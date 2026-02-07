@@ -1,8 +1,10 @@
 include_guard()
 
-# Служебные функции cmake
-
+# Подключить модуль дополнительных функций cmake
 include(${CMAKE_CURRENT_LIST_DIR}/details.cmake)
+
+# Определить директорию дополнений к Cpp
+set(__BUILD_TOOLKIT_CPP_TOOLS_DIR__ "${CMAKE_CURRENT_LIST_DIR}/../../cpp_tools")
 
 #[[
     ИСПОЛЬЗОВАНИЕ

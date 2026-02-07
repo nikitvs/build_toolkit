@@ -324,130 +324,48 @@ endfunction()
 
 #[[
 ИСПОЛЬЗОВАНИЕ
-    __configure_target_with_build_type__(FUNCTION_PREFIX <prefix>
-                                         TARGET <target>)
+    add_prepared_target(EXECUTABLE | LIBRARY
+                        TARGET <target>
+                        SOURCES <source>...
+                        [STATIC | SHARED | MODULE | OBJECT]
+                        [DEBUG_OPTIONS <options>]
+                        [RELEASE_OPTIONS <options>]
+                        [PUBLIC | PRIVATE]
+                        [NO_SANITIZERS]
+                        [EXCLUDE_FROM_ALL])
 
 АРГУМЕНТЫ
-    FUNCTION_PREFIX - префикс вызвавшей функции
-    TARGET          - целевой таргет
-
-ОПИСАНИЕ
-    Настроить аргументы таргета в зависимости от типа сборки
-#]]
-
-function(__configure_target_with_build_type__)
-
-    # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "__TYPED_TARGET_CONFIGURING_PREFIX__")
-
-    # Задать конфигурацию аргументов парсинга
-    set(__ONE_VALUE_ARGS__ "TARGET" "FUNCTION_PREFIX")
-
-    # Парсить аргументы
-    cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          ""
-                          "${__ONE_VALUE_ARGS__}"
-                          ""
-                          "${ARGN}")
-
-    # Проверить аргументы функции
-    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        ARGS "${__ONE_VALUE_ARGS__}")
-
-    # Взять целевой таргет из аргумента
-    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
-
-    # Подключить модуль библиотечных функций
-    include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/libs_functions.cmake)
-
-    # Подключить библиотеку дополнительных функций
-    link_module_libraries(
-        PUBLIC
-        TARGET "${__TARGET__}"
-        MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/lib_additional"
-        MODULE_LIBS "BuildToolkitAdditional")
-
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-
-        # Определить опции сборки
-        __extract_arg_value__(ARG "RELEASE_OPTIONS"
-                              OUT_VAR "__COMPILE_OPTIONS__"
-                              FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}"
-                              DEFAULT "-O2")
-
-        # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTIONS__}")
-
-        # Определить c++ макрос выключенной отладки
-        target_compile_definitions("${__TARGET__}" PRIVATE NDEBUG)
-
-    elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
-
-        # Определить опции сборки
-        __extract_arg_value__(ARG "DEBUG_OPTIONS"
-                              OUT_VAR "__COMPILE_OPTIONS__"
-                              FUNCTION_PREFIX "${${__PARSING_PREFIX__}_FUNCTION_PREFIX}")
-
-        # Задать опции сборки
-        target_compile_options("${__TARGET__}" PRIVATE "${__COMPILE_OPTIONS__}")
-
-        # Подключить либу с фичами для отладки
-        link_module_libraries(
-            PUBLIC
-            TARGET "${__TARGET__}"
-            MODULE_PATH "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/cpp_tools/dev_tools"
-            MODULE_LIBS "BuildToolkitDevTools")
-
-        # Подключить модуль диагностики
-        include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/diagnostics_functions.cmake)
-
-        # Использовать санитайзеры
-        use_diagnostics(PRIVATE TARGET "${__TARGET__}")
-
-# TODO
-#        # Использовать анализатор кода
-#        use_pvs(TARGET "${__TARGET__}")
-
-    endif()
-
-endfunction()
-
-#[[
-ИСПОЛЬЗОВАНИЕ
-    add_prepared_library(TARGET <target>
-                         SOURCES <source>...
-                         [EXCLUDE_FROM_ALL]
-                         [STATIC | SHARED | MODULE | OBJECT]
-                         [RELEASE_OPTIONS <options>]
-                         [DEBUG_OPTIONS <options>])
-
-АРГУМЕНТЫ
-    TARGET                          - целевой таргет
+    EXECUTABLE | LIBRARY            - тип создаваемого таргета (исполняемый файл или библиотека)
+    TARGET                          - имя создаваемого таргета
     SOURCES                         - список исходных текстов
-    EXCLUDE_FROM_ALL                - исключить из таргета 'all'
-    STATIC, SHARED, MODULE, OBJECT  - модификаторы, определяющие тип библиотеки
-    RELEASE_OPTIONS                 - (опционально) опции сборки в релизе
-    DEBUG_OPTIONS                   - (опционально) опции сборки в отладке
+    STATIC, SHARED, MODULE, OBJECT  - (опционально) модификаторы, определяющие тип библиотеки
+    DEBUG_OPTIONS                   - (опционально) опции компиляции для отладки
+    RELEASE_OPTIONS                 - (опционально) опции компиляции для релиза
+    PUBLIC, PRIVATE                 - (опционально) модификаторы распространения опций компиляции на внешние таргеты
+    NO_SANITIZERS                   - (опционально) флаг отключения санитайзеров
+    EXCLUDE_FROM_ALL                - (опционально) исключить из таргета 'all'
 
 ОПИСАНИЕ
-    Создать таргет библиотеки
+    Создать подготовленный таргет исполняемого файла или библиотеки
 #]]
 
-function(add_prepared_library)
+function(add_prepared_target)
 
     # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
+    set(__PARSING_PREFIX__ "__ADDING_PREPARED_TARGET__")
 
     # Задать конфигурацию аргументов парсинга
-    set(__OPTIONS__ "EXCLUDE_FROM_ALL")
-    set(__INCOMPATIBLE_MODIFIERS__ "STATIC" "SHARED" "MODULE" "OBJECT")
+    set(__OPTIONS__ "NO_SANITIZERS" "EXCLUDE_FROM_ALL")
+    set(__INCOMPATIBLE_MODIFIERS_TARGET_TYPE__ "EXECUTABLE" "LIBRARY")
+    set(__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__ "STATIC" "SHARED" "MODULE" "OBJECT")
+    set(__INCOMPATIBLE_MODIFIERS_VISIBILITY__ "PUBLIC" "PRIVATE")
     set(__ONE_VALUE_ARGS__ "TARGET")
     set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
     # Парсить аргументы
     cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__INCOMPATIBLE_MODIFIERS__};${__OPTIONS__}"
+                          "${__OPTIONS__};${__INCOMPATIBLE_MODIFIERS_TARGET_TYPE__};${__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__};${__INCOMPATIBLE_MODIFIERS_VISIBILITY__}"
                           "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
                           "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
                           "${ARGN}")
@@ -456,81 +374,109 @@ function(add_prepared_library)
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
                         ARGS "${__ONE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS_TARGET_TYPE__}")
 
-    # Извлечь модификатор
-    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS__}"
-                         OUT_VAR "__MODIFIER__")
-
-    # Извлечь модификатор
-    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
-                         AVAILABLE_MODIFIERS "EXCLUDE_FROM_ALL"
-                         OUT_VAR "__EXCLUDE__")
-
-    # Взять целевой таргет из аргумента
-    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
-
-    add_library("${__TARGET__}" ${__MODIFIER__} ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
-
-    # Настроить таргет
-    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}" TARGET "${__TARGET__}")
-
-endfunction()
-
-#[[
-ИСПОЛЬЗОВАНИЕ
-    add_prepared_executable(TARGET <target>
-                            SOURCES <source>...
-                            [EXCLUDE_FROM_ALL]
-                            [RELEASE_OPTIONS <options>]
-                            [DEBUG_OPTIONS <options>])
-
-АРГУМЕНТЫ
-    TARGET                          - целевой таргет
-    SOURCES                         - список исходных текстов
-    EXCLUDE_FROM_ALL                - исключить из таргета 'all'
-    RELEASE_OPTIONS                 - (опционально) опции сборки в релизе
-    DEBUG_OPTIONS                   - (опционально) опции сборки в отладке
-
-ОПИСАНИЕ
-    Создать таргет исполняемого файла
-#]]
-
-function(add_prepared_executable)
-
-    # Задать префикс парсинга
-    set(__PARSING_PREFIX__ "__ADDING_PREPARED_LIBRARY__")
-
-    # Задать конфигурацию аргументов парсинга
-    set(__OPTIONS__ "EXCLUDE_FROM_ALL")
-    set(__ONE_VALUE_ARGS__ "TARGET")
-    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
-    set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
-
-    # Парсить аргументы
-    cmake_parse_arguments("${__PARSING_PREFIX__}"
-                          "${__OPTIONS__}"
-                          "${__ONE_VALUE_ARGS__};${__OPTIONAL_ONE_VALUE_ARGS__}"
-                          "${__OPTIONAL_MULTIPLE_VALUE_ARGS__}"
-                          "${ARGN}")
-
-    # Проверить аргументы функции
+    # Отдельно проверить на пересечения типы библиотеки
     __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
-                        ARGS "${__ONE_VALUE_ARGS__}"
-                        OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__};${__OPTIONAL_MULTIPLE_VALUE_ARGS__}")
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__}")
+
+    # Отдельно проверить на пересечения модификаторы видимости
+    __check_arguments__(PREFIX "${__PARSING_PREFIX__}"
+                        INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS_VISIBILITY__}")
+
+    # Проверить, что тип библиотеки нельзя задать для исполняемого файла
+    __check_incompatible_groups_intersections__(GROUP_1 "EXECUTABLE"
+                                                GROUP_2 "${__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__}"
+                                                FUNCTION_PREFIX "${__PARSING_PREFIX__}")
+
+    # Взять имя целевого таргета из аргумента
+    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
 
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "EXCLUDE_FROM_ALL"
                          OUT_VAR "__EXCLUDE__")
 
-    # Взять целевой таргет из аргумента
-    set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
+    # Создать таргет
+    if(${__PARSING_PREFIX__}_EXECUTABLE)
 
-    add_executable("${__TARGET__}" ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
+        add_executable("${__TARGET__}" ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
 
-    # Настроить таргет
-    __configure_target_with_build_type__(FUNCTION_PREFIX "${__PARSING_PREFIX__}" TARGET "${__TARGET__}")
+    elseif(${__PARSING_PREFIX__}_LIBRARY)
+
+        # Извлечь модификатор
+        __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                             AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__}"
+                             OUT_VAR "__LIBRARY_TYPE__")
+
+        add_library("${__TARGET__}" ${__LIBRARY_TYPE__} ${__EXCLUDE__} ${${__PARSING_PREFIX__}_SOURCES})
+
+    else()
+
+        message(FATAL_ERROR "Должен быть задан тип создаваемого таргета: ${__INCOMPATIBLE_MODIFIERS_TARGET_TYPE__}")
+
+    endif()
+
+    # Извлечь модификатор
+    __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                         AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS_VISIBILITY__}"
+                         OUT_VAR "__MODIFIER__"
+                         DEFAULT "PRIVATE")
+
+    # Подключить модуль библиотечных функций
+    include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/libs_functions.cmake)
+
+    # Подключить библиотеку дополнительных функций
+    link_module_libraries(
+        ${__MODIFIER__}
+        TARGET "${__TARGET__}"
+        MODULE_PATH "${__BUILD_TOOLKIT_CPP_TOOLS_DIR__}/lib_additional"
+        MODULE_LIBS "BuildToolkitAdditional")
+
+    if(CMAKE_BUILD_TYPE MATCHES "Release")
+
+        # Определить опции сборки
+        __extract_arg_value__(ARG "RELEASE_OPTIONS"
+                              OUT_VAR "__COMPILE_OPTIONS__"
+                              FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                              DEFAULT "-O2")
+
+        # Определить c++ макрос выключенной отладки
+        target_compile_definitions("${__TARGET__}" ${__MODIFIER__} NDEBUG)
+
+    elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
+
+        # Определить опции сборки
+        __extract_arg_value__(ARG "DEBUG_OPTIONS"
+                              OUT_VAR "__COMPILE_OPTIONS__"
+                              FUNCTION_PREFIX "${__PARSING_PREFIX__}")
+
+        # Подключить либу с фичами для отладки
+        link_module_libraries(
+            PUBLIC
+            TARGET "${__TARGET__}"
+            MODULE_PATH "${__BUILD_TOOLKIT_CPP_TOOLS_DIR__}/lib_dev_tools"
+            MODULE_LIBS "BuildToolkitDevTools")
+
+        # Подключить модуль диагностики
+        include(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/diagnostics_functions.cmake)
+
+        # Извлечь модификатор
+        __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                             AVAILABLE_MODIFIERS "NO_SANITIZERS"
+                             OUT_VAR "__NO_SANITIZERS__")
+
+        # Подключить диагностику
+        # TODO
+        use_diagnostics(${__MODIFIER__} ${__NO_SANITIZERS__} TARGET "${__TARGET__}")
+
+# TODO
+#        # Использовать анализатор кода
+#        use_pvs(TARGET "${__TARGET__}")
+
+    endif()
+
+    # Задать опции сборки
+    target_compile_options("${__TARGET__}" ${__MODIFIER__} "${__COMPILE_OPTIONS__}")
 
 endfunction()
