@@ -327,6 +327,7 @@ endfunction()
     add_prepared_target(EXECUTABLE | LIBRARY
                         TARGET <target>
                         SOURCES <source>...
+                        [CXX_STANDARD <value>]
                         [STATIC | SHARED | MODULE | OBJECT]
                         [DEBUG_OPTIONS <options>]
                         [RELEASE_OPTIONS <options>]
@@ -338,6 +339,7 @@ endfunction()
     EXECUTABLE | LIBRARY            - тип создаваемого таргета (исполняемый файл или библиотека)
     TARGET                          - имя создаваемого таргета
     SOURCES                         - список исходных текстов
+    CXX_STANDARD                    - номер стандарта C++ (по умолчанию 17)
     STATIC, SHARED, MODULE, OBJECT  - (опционально) модификаторы, определяющие тип библиотеки
     DEBUG_OPTIONS                   - (опционально) опции компиляции для отладки
     RELEASE_OPTIONS                 - (опционально) опции компиляции для релиза
@@ -360,7 +362,7 @@ function(add_prepared_target)
     set(__INCOMPATIBLE_MODIFIERS_LIBRARY_TYPE__ "STATIC" "SHARED" "MODULE" "OBJECT")
     set(__INCOMPATIBLE_MODIFIERS_VISIBILITY__ "PUBLIC" "PRIVATE" "INTERFACE")
     set(__ONE_VALUE_ARGS__ "TARGET")
-    set(__OPTIONAL_ONE_VALUE_ARGS__ "RELEASE_OPTIONS" "DEBUG_OPTIONS")
+    set(__OPTIONAL_ONE_VALUE_ARGS__ "CXX_STANDARD" "RELEASE_OPTIONS" "DEBUG_OPTIONS")
     set(__OPTIONAL_MULTIPLE_VALUE_ARGS__ "SOURCES")
 
     # Парсить аргументы
@@ -417,6 +419,15 @@ function(add_prepared_target)
 
     endif()
 
+    # Задать список регулярных выражений
+    __extract_arg_value__(ARG "CXX_STANDARD"
+                          OUT_VAR "__CXX_STANDARD__"
+                          FUNCTION_PREFIX "${__PARSING_PREFIX__}"
+                          DEFAULT "17")
+
+    # Задать стандарт языка
+    set_property(TARGET "${__TARGET__}" PROPERTY CXX_STANDARD "${__CXX_STANDARD__}")
+
     # Извлечь модификатор
     __extract_modifier__(FUNCTION_PREFIX "${__PARSING_PREFIX__}"
                          AVAILABLE_MODIFIERS "${__INCOMPATIBLE_MODIFIERS_VISIBILITY__}"
@@ -467,7 +478,6 @@ function(add_prepared_target)
                              OUT_VAR "__NO_SANITIZERS__")
 
         # Подключить диагностику
-        # TODO
         use_diagnostics(${__MODIFIER__} ${__NO_SANITIZERS__} TARGET "${__TARGET__}")
 
 # TODO
