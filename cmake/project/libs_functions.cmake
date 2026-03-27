@@ -91,7 +91,7 @@ endfunction()
         MODULE_PATH                 - исходный путь до модуля
         MODULE_LIBS                 - список таргетов библиотек, которые необходимо подключить
         MODULE_DESTINATION_PATH     - (опционально) конечный путь до модуля
-        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы видимости модулей для внешних таргетов (по умолчанию PUBLIC)
+        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы видимости модулей для внешних таргетов (по умолчанию PRIVATE)
 
     ОПИСАНИЕ
         Найти и подключить к целевому таргету указанные модули
@@ -173,25 +173,14 @@ endfunction()
     АРГУМЕНТЫ
         TARGET                      - целевой таргет
         QT_LIBS                     - список библиотек Qt
-        VERSION                     - (опционально) версия пакета Qt
-        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы доступа
+        VERSION                     - (опционально) версия пакета Qt (по умолчанию берется наибольшая версия из доступных)
+        PUBLIC, PRIVATE, INTERFACE  - (опционально) модификаторы видимости для внешних таргетов (по умолчанию PRIVATE)
 
     ОПИСАНИЕ
         Найти и подключить к целевому таргету указанные библиотеки Qt
-        Опционально можно указать версию пакета Qt, из которого будут браться библиотеки
-        По умолчанию берется наибольшая версия из доступных
-        Также опционально можно указать модификатор видимости для внешних таргетов
-        По умолчанию берется модификатор PUBLIC
 #]]
 
 function(link_qt_libraries)
-
-    # TODO проверить, что поиск пакетов внутри функции работает нормально
-    # Найти пакеты Qt
-    find_package(QT NAMES Qt6 Qt5 REQUIRED)
-
-    # Запомнить глобально версию Qt
-    set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
 
     # Задать префикс парсинга
     set(__PARSING_PREFIX__ "__QT_LIBS_LINKING_PREFIX__")
@@ -214,6 +203,20 @@ function(link_qt_libraries)
                         ARGS "${__ONE_VALUE_ARGS__}" "${__MULTIPLE_VALUE_ARGS__}"
                         OPTIONAL_ARGS "${__OPTIONAL_ONE_VALUE_ARGS__}"
                         INCOMPATIBLE_ARGS "${__INCOMPATIBLE_MODIFIERS__}")
+
+    # Найти пакеты Qt один раз и проверить, что результат доступен внутри функции
+    if (NOT QT_VERSION_MAJOR)
+    
+        find_package(QT NAMES Qt6 Qt5 REQUIRED)
+    
+        if (NOT QT_VERSION_MAJOR)
+            message(FATAL_ERROR "Не удалось определить QT_VERSION_MAJOR после find_package(QT ...)")
+        endif()
+
+        # Запомнить глобально версию Qt для повторных вызовов функции
+        set(QT_VERSION_MAJOR "${QT_VERSION_MAJOR}" CACHE STRING "Максимальная версия Qt")
+
+    endif()
 
     # Взять целевой таргет из аргумента
     set(__TARGET__ "${${__PARSING_PREFIX__}_TARGET}")
